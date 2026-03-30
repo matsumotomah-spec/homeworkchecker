@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>宿題提出チェッカー</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --paper: #fffef9;
+    --ink: #1a1208;
+    --ink-light: #6b5e4a;
+    --accent: #c84b2f;
+    --accent2: #2a6496;
+    --submitted: #b8b0a0;
+    --submitted-bg: #e8e4dc;
+    --grid-line: #d4cfc5;
+    --shadow: rgba(30,20,10,0.12);
+    --green: #2e7d4f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--ink);
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 39px,
+        var(--grid-line) 39px,
+        var(--grid-line) 40px
+      );
+    padding-bottom: 120px;
+  }
+
+  .header {
+    background: var(--paper);
+    border-bottom: 3px solid var(--ink);
+    padding: 18px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 0 var(--shadow);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .app-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink-light);
+    padding: 2px 8px;
+    flex-shrink: 0;
+  }
+
+  .date-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .date-display .weekday {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--accent);
+    margin-left: 8px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .count-badge { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; }
+  .count-submitted { color: var(--accent); }
+  .count-pending { color: var(--accent2); }
+
+  .progress-bar {
+    flex: 1;
+    min-width: 120px;
+    height: 6px;
+    background: var(--grid-line);
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+
+  .grid-container { padding: 20px 16px; }
+
+  .subject-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--accent);
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .edit-mode-badge {
+    font-size: 10px;
+    background: var(--green);
+    color: white;
+    padding: 2px 8px;
+    letter-spacing: 0.1em;
+    display: none;
+  }
+
+  .edit-mode-badge.visible { display: inline-block; }
+
+  .number-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .num-btn {
+    aspect-ratio: 1;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 4px 2px;
+    overflow: hidden;
+  }
+
+  .num-btn .btn-num {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .num-btn .btn-name {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 2px;
+    color: var(--ink-light);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+
+  .num-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .num-btn.submitted {
+    background: var(--submitted-bg);
+    border-color: var(--submitted);
+    color: var(--submitted);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .num-btn.submitted .btn-num { text-decoration: line-through; }
+  .num-btn.submitted .btn-name { color: var(--submitted); }
+
+  .num-btn.submitted::after {
+    content: '✓';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: var(--submitted);
+    font-family: sans-serif;
+  }
+
+  .num-btn.edit-ready {
+    border-style: dashed;
+    border-color: var(--green);
+    box-shadow: 3px 3px 0 var(--green);
+  }
+
+  .num-btn.edit-ready::before {
+    content: '✎';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 9px;
+    color: var(--green);
+  }
+
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border-top: 3px solid var(--ink);
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 -4px 0 var(--shadow);
+  }
+
+  .btn {
+    flex: 1;
+    height: 52px;
+    border: 2px solid var(--ink);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.12s;
+    box-shadow: 3px 3px 0 var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .btn-reset { background: var(--paper); color: var(--ink); }
+  .btn-export { background: var(--accent); color: white; border-color: var(--accent); flex: 2; }
+  .btn-history { background: var(--accent2); color: white; border-color: var(--accent2); }
+  .btn-names { background: var(--green); color: white; border-color: var(--green); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,18,8,0.7);
+    z-index: 200;
+    align-items: flex-end;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--paper);
+    width: 100%;
+    max-height: 78vh;
+    border-top: 3px solid var(--ink);
+    overflow-y: auto;
+    padding: 20px 16px 36px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-close {
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--ink-light);
+    background: none;
+    border: none;
+    font-family: sans-serif;
+    line-height: 1;
+    padding: 4px 8px;
+  }
+
+  /* パスワードモーダル */
+  .pw-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,18,8,0.75);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pw-modal-overlay.open { display: flex; }
+
+  .pw-modal {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 28px 24px 24px;
+    width: 88%;
+    max-width: 360px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .pw-title { font-size: 15px; font-weight: 900; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .pw-sub { font-size: 12px; color: var(--ink-light); margin-bottom: 16px; }
+
+  .pw-dots {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .pw-dot {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: transparent;
+    transition: background 0.1s;
+  }
+
+  .pw-dot.filled { background: var(--ink); }
+
+  .pw-numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .pw-key {
+    height: 56px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s;
+  }
+
+  .pw-key:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
+  .pw-key.del { font-size: 16px; color: var(--ink-light); }
+  .pw-key.cancel { font-size: 13px; color: var(--ink-light); font-family: 'Zen Kaku Gothic New', sans-serif; }
+  .pw-error { text-align: center; color: var(--accent); font-size: 13px; font-weight: 700; margin-top: 12px; min-height: 20px; }
+
+  /* 名前編集モーダル */
+  .name-edit-modal {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 24px 20px 20px;
+    width: 88%;
+    max-width: 360px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .ne-title { font-size: 15px; font-weight: 900; margin-bottom: 4px; }
+  .ne-sub { font-size: 12px; color: var(--ink-light); margin-bottom: 16px; }
+
+  .ne-input {
+    width: 100%;
+    height: 48px;
+    border: 2px solid var(--ink);
+    background: var(--bg);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0 12px;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 14px;
+  }
+
+  .ne-input:focus { border-color: var(--green); background: var(--paper); }
+
+  .ne-btns { display: flex; gap: 8px; }
+
+  .ne-btn {
+    flex: 1;
+    height: 46px;
+    border: 2px solid var(--ink);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ne-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
+  .ne-btn-cancel { background: var(--paper); color: var(--ink-light); }
+  .ne-btn-clear { background: var(--paper); color: var(--accent); border-color: var(--accent); }
+  .ne-btn-save { background: var(--green); color: white; border-color: var(--green); flex: 2; }
+
+  /* 履歴 */
+  .history-item {
+    border: 1.5px solid var(--grid-line);
+    border-left: 4px solid var(--accent);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background: var(--bg);
+  }
+
+  .history-date { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .history-meta { font-size: 12px; color: var(--ink-light); margin-bottom: 6px; }
+
+  .history-names {
+    font-size: 12px;
+    color: var(--ink-light);
+    word-break: break-all;
+    line-height: 1.7;
+  }
+
+  .history-names .not-sub { color: var(--accent); font-weight: 700; }
+  .history-empty { text-align: center; color: var(--ink-light); padding: 30px; font-size: 14px; }
+
+  .btn-export-all {
+    width: 100%;
+    height: 48px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 16px;
+    letter-spacing: 0.08em;
+  }
+
+  .btn-export-all:active { opacity: 0.8; }
+
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 400;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="app-title">宿題チェック</span>
+    <div class="date-display">
+      <span id="dateStr">--</span>
+      <span class="weekday" id="weekdayStr">--</span>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span class="count-badge count-submitted">提出済 <span id="cntSubmitted">0</span>人</span>
+    <span class="count-badge count-pending">未提出 <span id="cntPending">30</span>人</span>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-container">
+  <div class="subject-label">
+    出席番号
+    <span class="edit-mode-badge" id="editModeBadge">✎ 名前編集モード</span>
+  </div>
+  <div class="number-grid" id="numGrid"></div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-export" onclick="saveAndExportToday()">保存 &amp; CSV</button>
+  <button class="btn btn-names" id="btnNames" onclick="requestEditMode()">名前編集</button>
+  <button class="btn btn-history" onclick="openHistory()">履歴</button>
+</div>
+
+<!-- 履歴モーダル -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>過去の記録</span>
+      <button class="modal-close" onclick="closeHistory()">×</button>
+    </div>
+    <div id="historyList"></div>
+    <button class="btn-export-all" onclick="exportAllCSV()">📥 全履歴をCSVで一括出力</button>
+  </div>
+</div>
+
+<!-- パスワードモーダル -->
+<div class="pw-modal-overlay" id="pwModal">
+  <div class="pw-modal">
+    <div class="pw-title">🔒 パスワードを入力</div>
+    <div class="pw-sub">名前の編集には認証が必要です</div>
+    <div class="pw-dots">
+      <div class="pw-dot" id="d0"></div>
+      <div class="pw-dot" id="d1"></div>
+      <div class="pw-dot" id="d2"></div>
+      <div class="pw-dot" id="d3"></div>
+    </div>
+    <div class="pw-numpad">
+      <button class="pw-key" onclick="pwKey('1')">1</button>
+      <button class="pw-key" onclick="pwKey('2')">2</button>
+      <button class="pw-key" onclick="pwKey('3')">3</button>
+      <button class="pw-key" onclick="pwKey('4')">4</button>
+      <button class="pw-key" onclick="pwKey('5')">5</button>
+      <button class="pw-key" onclick="pwKey('6')">6</button>
+      <button class="pw-key" onclick="pwKey('7')">7</button>
+      <button class="pw-key" onclick="pwKey('8')">8</button>
+      <button class="pw-key" onclick="pwKey('9')">9</button>
+      <button class="pw-key cancel" onclick="closePwModal()">キャンセル</button>
+      <button class="pw-key" onclick="pwKey('0')">0</button>
+      <button class="pw-key del" onclick="pwDel()">⌫</button>
+    </div>
+    <div class="pw-error" id="pwError"></div>
+  </div>
+</div>
+
+<!-- 名前編集モーダル -->
+<div class="pw-modal-overlay" id="nameEditModal">
+  <div class="name-edit-modal">
+    <div class="ne-title" id="neTitle">--番</div>
+    <div class="ne-sub">名前を入力（空欄＋保存で削除）</div>
+    <input class="ne-input" type="text" id="neInput" maxlength="6" placeholder="例：田中">
+    <div class="ne-btns">
+      <button class="ne-btn ne-btn-cancel" onclick="closeNameEdit()">キャンセル</button>
+      <button class="ne-btn ne-btn-clear" onclick="clearName()">削除</button>
+      <button class="ne-btn ne-btn-save" onclick="saveName()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOTAL       = 30;
+const STORAGE_KEY = 'homework_checker_v1';
+const NAMES_KEY   = 'homework_names_v1';
+const PASSWORD    = '3497';
+const WEEKDAYS    = ['日','月','火','水','木','金','土'];
+
+let submitted  = new Set();
+let names      = {};
+let editMode   = false;
+let pwBuffer   = '';
+let editTarget = null;
+
+/* ストレージ */
+function loadStorage() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+function saveStorage(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function loadNames() {
+  try { return JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); } catch { return {}; }
+}
+function saveNames() { localStorage.setItem(NAMES_KEY, JSON.stringify(names)); }
+
+/* 日付 */
+function getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateJP(key) {
+  const [y,m,d] = key.split('-');
+  const date = new Date(+y, +m-1, +d);
+  return `${y}年${m}月${d}日（${WEEKDAYS[date.getDay()]}）`;
+}
+function initDate() {
+  const d = new Date();
+  const key = getTodayKey();
+  const [y,m,day] = key.split('-');
+  document.getElementById('dateStr').textContent    = `${y}.${m}.${day}`;
+  document.getElementById('weekdayStr').textContent = WEEKDAYS[d.getDay()] + '曜日';
+}
+
+/* グリッド */
+function buildGrid() {
+  const grid = document.getElementById('numGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= TOTAL; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn'
+      + (submitted.has(i) ? ' submitted' : '')
+      + (editMode         ? ' edit-ready' : '');
+
+    const numSpan = document.createElement('span');
+    numSpan.className   = 'btn-num';
+    numSpan.textContent = i;
+    btn.appendChild(numSpan);
+
+    if (names[i]) {
+      const nameSpan = document.createElement('span');
+      nameSpan.className   = 'btn-name';
+      nameSpan.textContent = names[i];
+      btn.appendChild(nameSpan);
+    }
+
+    btn.addEventListener('click', () => {
+      if (editMode) { openNameEdit(i); }
+      else          { toggle(i, btn); }
+    });
+
+    grid.appendChild(btn);
+  }
+
+  document.getElementById('editModeBadge').classList.toggle('visible', editMode);
+  const btnNames = document.getElementById('btnNames');
+  btnNames.textContent = editMode ? '編集終了' : '名前編集';
+  btnNames.style.background = editMode ? 'var(--ink)' : 'var(--green)';
+  btnNames.style.borderColor = editMode ? 'var(--ink)' : 'var(--green)';
+}
+
+/* チェック */
+function toggle(n, btn) {
+  if (submitted.has(n)) {
+    submitted.delete(n);
+    btn.classList.remove('submitted');
+  } else {
+    submitted.add(n);
+    btn.classList.add('submitted');
+  }
+  updateStatus();
+}
+
+function updateStatus() {
+  const s = submitted.size;
+  document.getElementById('cntSubmitted').textContent    = s;
+  document.getElementById('cntPending').textContent      = TOTAL - s;
+  document.getElementById('progressFill').style.width    = `${(s/TOTAL)*100}%`;
+}
+
+/* リセット */
+function resetToday() {
+  if (!confirm('今日のチェックをリセットしますか？')) return;
+  submitted.clear();
+  buildGrid();
+  updateStatus();
+}
+
+/* パスワードモーダル */
+function requestEditMode() {
+  if (editMode) {
+    editMode = false;
+    buildGrid();
+    showToast('名前編集モードを終了しました');
+    return;
+  }
+  pwBuffer = '';
+  updateDots();
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwModal').classList.add('open');
+}
+
+function closePwModal() {
+  pwBuffer = '';
+  updateDots();
+  document.getElementById('pwModal').classList.remove('open');
+}
+
+function pwKey(k) {
+  if (pwBuffer.length >= 4) return;
+  pwBuffer += k;
+  updateDots();
+  if (pwBuffer.length === 4) {
+    setTimeout(() => {
+      if (pwBuffer === PASSWORD) {
+        document.getElementById('pwModal').classList.remove('open');
+        editMode = true;
+        buildGrid();
+        showToast('名前編集モードに入りました');
+      } else {
+        document.getElementById('pwError').textContent = 'パスワードが違います';
+        pwBuffer = '';
+        updateDots();
+      }
+    }, 150);
+  }
+}
+
+function pwDel() {
+  if (!pwBuffer.length) return;
+  pwBuffer = pwBuffer.slice(0,-1);
+  updateDots();
+  document.getElementById('pwError').textContent = '';
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('d'+i).classList.toggle('filled', i < pwBuffer.length);
+  }
+}
+
+/* 名前編集モーダル */
+function openNameEdit(n) {
+  editTarget = n;
+  document.getElementById('neTitle').textContent = `${n}番${names[n] ? '（現在：' + names[n] + '）' : '（名前未設定）'}`;
+  document.getElementById('neInput').value = names[n] || '';
+  document.getElementById('nameEditModal').classList.add('open');
+  setTimeout(() => document.getElementById('neInput').focus(), 120);
+}
+
+function closeNameEdit() {
+  document.getElementById('nameEditModal').classList.remove('open');
+  editTarget = null;
+}
+
+function saveName() {
+  if (editTarget === null) return;
+  const val = document.getElementById('neInput').value.trim();
+  if (val) { names[editTarget] = val; }
+  else     { delete names[editTarget]; }
+  saveNames();
+  closeNameEdit();
+  buildGrid();
+  showToast(val ? `${editTarget}番「${val}」を登録しました` : `${editTarget}番の名前を削除しました`);
+}
+
+function clearName() {
+  if (editTarget === null) return;
+  delete names[editTarget];
+  saveNames();
+  closeNameEdit();
+  buildGrid();
+  showToast(`${editTarget}番の名前を削除しました`);
+}
+
+/* CSV */
+function labelOf(n) {
+  return names[n] ? `${n}(${names[n]})` : String(n);
+}
+
+function getCurrentRecord() {
+  const notSub = [];
+  for (let i = 1; i <= TOTAL; i++) {
+    if (!submitted.has(i)) notSub.push(i);
+  }
+  return {
+    date: getTodayKey(),
+    submitted:         [...submitted].sort((a,b)=>a-b),
+    notSubmitted:      notSub,
+    total:             TOTAL,
+    submittedCount:    submitted.size,
+    notSubmittedCount: notSub.length
+  };
+}
+
+function saveAndExportToday() {
+  const record  = getCurrentRecord();
+  const storage = loadStorage();
+  storage[record.date] = record;
+  saveStorage(storage);
+  downloadCSV([record]);
+  showToast('保存・CSV出力しました');
+}
+
+function downloadCSV(records) {
+  let csv = '\uFEFF日付,提出人数,未提出人数,提出(番号/名前),未提出(番号/名前)\n';
+  records.forEach(r => {
+    const subLabels    = r.submitted.map(labelOf).join(' ');
+    const notSubLabels = r.notSubmitted.map(labelOf).join(' ');
+    csv += `${formatDateJP(r.date)},${r.submittedCount},${r.notSubmittedCount},"${subLabels}","${notSubLabels}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = records.length === 1
+    ? `宿題チェック_${records[0].date}.csv`
+    : `宿題チェック_全履歴.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* 履歴 */
+function openHistory() {
+  const storage = loadStorage();
+  const keys    = Object.keys(storage).sort().reverse();
+  const list    = document.getElementById('historyList');
+
+  if (keys.length === 0) {
+    list.innerHTML = '<div class="history-empty">まだ記録がありません</div>';
+  } else {
+    list.innerHTML = keys.map(k => {
+      const r            = storage[k];
+      const notSubLabels = r.notSubmitted.map(labelOf).join('・');
+      return `
+        <div class="history-item">
+          <div class="history-date">${formatDateJP(k)}</div>
+          <div class="history-meta">提出済 ${r.submittedCount}人 ／ 未提出 ${r.notSubmittedCount}人</div>
+          ${r.notSubmittedCount > 0
+            ? `<div class="history-names">未提出: <span class="not-sub">${notSubLabels}</span></div>`
+            : `<div class="history-names" style="color:var(--green)">全員提出済 🎉</div>`}
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('historyModal').classList.add('open');
+}
+
+function closeHistory() {
+  document.getElementById('historyModal').classList.remove('open');
+}
+
+function exportAllCSV() {
+  const storage = loadStorage();
+  const keys    = Object.keys(storage).sort();
+  if (!keys.length) { showToast('記録がありません'); return; }
+  downloadCSV(keys.map(k => storage[k]));
+  showToast('全履歴をCSV出力しました');
+}
+
+/* トースト */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* モーダル外タップ */
+document.getElementById('historyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeHistory();
+});
+document.getElementById('nameEditModal').addEventListener('click', function(e) {
+  if (e.target === this) closeNameEdit();
+});
+
+/* Enter で保存 */
+document.getElementById('neInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveName();
+});
+
+/* 初期化 */
+names = loadNames();
+initDate();
+buildGrid();
+updateStatus();
+</script>
+</body>
+</html>
