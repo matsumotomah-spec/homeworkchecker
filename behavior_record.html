@@ -113,6 +113,84 @@
         .filter(r => filterSubject === "全教科" || r.subject === filterSubject)
         .sort((a, b) => b.date.localeCompare(a.date));
 
+      // ---- CSVエクスポート ----
+      const exportCSV = () => {
+        if (records.length === 0) { alert("エクスポートする記録がありません。"); return; }
+        const header = "id,date,studentName,subject,note";
+        const escape = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+        const rows = records.map(r => [r.id, r.date, escape(r.studentName), escape(r.subject), escape(r.note)].join(","));
+        const csv = "\uFEFF" + header + "\n" + rows.join("\n"); // BOM付きでExcel対応
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const d = new Date().toISOString().slice(0, 10);
+        a.download = "行動記録_" + d + ".csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      // ---- CSVインポート ----
+      const [importMsg, setImportMsg] = useState("");
+      const importCSV = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        e.target.value = ""; // 同じファイルを再選択できるようにリセット
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            let text = ev.target.result;
+            // BOM除去
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) { setImportMsg("❌ データが見つかりませんでした。"); return; }
+            // ヘッダー行をスキップ
+            const parseRow = (line) => {
+              const result = [];
+              let cur = "", inQ = false;
+              for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (inQ) {
+                  if (c === '"' && line[i+1] === '"') { cur += '"'; i++; }
+                  else if (c === '"') { inQ = false; }
+                  else { cur += c; }
+                } else {
+                  if (c === '"') { inQ = true; }
+                  else if (c === ',') { result.push(cur); cur = ""; }
+                  else { cur += c; }
+                }
+              }
+              result.push(cur);
+              return result;
+            };
+            const imported = [];
+            const newStudentNames = new Set();
+            for (let i = 1; i < lines.length; i++) {
+              const cols = parseRow(lines[i]);
+              if (cols.length < 5) continue;
+              const [id, date, studentName, subject, note] = cols;
+              if (!date || !studentName || !note) continue;
+              imported.push({ id: Number(id) || Date.now() + i, date, studentName, subject, note });
+              newStudentNames.add(studentName);
+            }
+            if (imported.length === 0) { setImportMsg("❌ 有効なデータが見つかりませんでした。"); return; }
+            // 既存と重複しないidのみ追加
+            const existingIds = new Set(records.map(r => r.id));
+            const toAdd = imported.filter(r => !existingIds.has(r.id));
+            // 新しい児童名があれば児童リストにも追加
+            const updatedStudents = [...students];
+            newStudentNames.forEach(name => { if (!updatedStudents.includes(name)) updatedStudents.push(name); });
+            saveStudents(updatedStudents);
+            saveRecords([...records, ...toAdd]);
+            setImportMsg("✅ " + toAdd.length + "件の記録を読み込みました（重複除外済み）");
+            setTimeout(() => setImportMsg(""), 4000);
+          } catch {
+            setImportMsg("❌ 読み込みに失敗しました。CSVの形式を確認してください。");
+          }
+        };
+        reader.readAsText(file, "UTF-8");
+      };
+
       const generatePrompt = () => {
         if (!sightStudent) return;
         const sRecs = filterBySemester(records.filter(r => r.studentName === sightStudent), sightSemester);
@@ -272,6 +350,23 @@
             {tab === 2 && (
               <div style={styles.section}>
                 <h2 style={styles.sectionTitle}>記録一覧 ({filteredRecords.length}件)</h2>
+
+                {/* CSV操作バー */}
+                <div style={styles.csvBar}>
+                  <button onClick={exportCSV} style={styles.btnExport}>
+                    💾 機器にデータを保存（CSV）
+                  </button>
+                  <label style={styles.btnImport}>
+                    📂 機器からデータを読み込む（CSV）
+                    <input type="file" accept=".csv" onChange={importCSV} style={{ display: "none" }} />
+                  </label>
+                </div>
+                {importMsg && (
+                  <div style={{ ...styles.importMsg, backgroundColor: importMsg.startsWith("✅") ? "#EEF7EE" : "#FFF0F0", borderColor: importMsg.startsWith("✅") ? "#B0D8B0" : "#F4C0C0", color: importMsg.startsWith("✅") ? "#3A6B3A" : "#9B2020" }}>
+                    {importMsg}
+                  </div>
+                )}
+
                 <div style={styles.filterBar}>
                   <div style={styles.filterGroup}>
                     <span style={styles.filterLabel}>児童：</span>
@@ -500,6 +595,10 @@
       subjectBadge: { fontSize: 12, padding: "2px 10px", borderRadius: 10, fontWeight: 600 },
       recordDate: { fontSize: 12, color: "#A09080" },
       recordNote: { fontSize: 14, color: "#5D5048", lineHeight: 1.7, margin: 0 },
+      csvBar: { display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 },
+      btnExport: { display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", backgroundColor: "#fff", color: "#5B7E6C", border: "1.5px solid #5B7E6C", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "inherit" },
+      btnImport: { display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", backgroundColor: "#fff", color: "#7B6B9B", border: "1.5px solid #7B6B9B", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "inherit" },
+      importMsg: { padding: "10px 14px", borderRadius: 8, border: "1px solid", fontSize: 13, marginBottom: 12 },
       howToBanner: { backgroundColor: "#EEF7EE", border: "1px solid #C0D8C0", borderRadius: 10, padding: "14px 18px", marginBottom: 24 },
       howToTitle: { fontWeight: 700, fontSize: 14, color: "#4B6B4B", marginBottom: 8 },
       howToList: { paddingLeft: 20, fontSize: 13, color: "#5B7B5B", lineHeight: 2.2 },
