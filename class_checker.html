@@ -231,6 +231,12 @@
   .hist-empty{text-align:center;color:var(--ink-light);padding:24px;font-size:13px;}
   .btn-export-all{width:100%;height:46px;background:var(--ink);color:var(--paper);border:none;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;letter-spacing:.08em;}
   .btn-export-all:active{opacity:.8;}
+  .btn-backup{width:100%;height:46px;background:#7b3fa0;color:white;border:none;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.08em;}
+  .btn-backup:active{opacity:.8;}
+  .btn-import{width:100%;height:46px;background:var(--paper);color:var(--ink);border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.08em;box-shadow:2px 2px 0 var(--ink);}
+  .btn-import:active{opacity:.8;}
+  .import-section{margin-top:16px;padding-top:14px;border-top:2px dashed var(--grid-line);}
+  .import-title{font-size:11px;font-weight:700;color:var(--ink-light);letter-spacing:.1em;margin-bottom:6px;}
 
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;font-size:13px;font-weight:700;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;}
@@ -396,6 +402,12 @@
     <div class="modal-title"><span>履歴</span><button class="modal-close" onclick="closeHistory()">×</button></div>
     <div id="histList"></div>
     <button class="btn-export-all" onclick="exportAllCSV()">📥 全履歴をCSVで一括出力</button>
+    <div class="import-section">
+      <div class="import-title">📦 バックアップ・復元</div>
+      <button class="btn-backup" onclick="exportJSON()">💾 JSONバックアップを保存</button>
+      <button class="btn-import" onclick="triggerImport()">📂 JSONファイルをインポート</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImport(event)">
+    </div>
   </div>
 </div>
 
@@ -998,6 +1010,99 @@ function saveAndExportToday(){
   const sb=ls.get(KEY_SB,{});if(!sb[t])sb[t]={sessions:[]};ls.set(KEY_SB,sb);
   downloadCSV([t]);showToast('保存・CSV出力しました');
 }
+/* ══ JSON バックアップ・インポート ══ */
+function exportJSON(){
+  const payload={
+    version:1,
+    exported: new Date().toISOString(),
+    data:{
+      [KEY_NAMES]: ls.get(KEY_NAMES,{}),
+      [KEY_HW]:    ls.get(KEY_HW,{}),
+      [KEY_SH]:    ls.get(KEY_SH,{}),
+      [KEY_MM]:    ls.get(KEY_MM,{}),
+      [KEY_SB]:    ls.get(KEY_SB,{}),
+      [KEY_CKPTS]: ls.get(KEY_CKPTS,DEFAULT_CKPTS),
+    }
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=today();
+  a.download=`クラスチェッカー_バックアップ_${d}.json`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('JSONバックアップを保存しました');
+}
+
+function triggerImport(){
+  document.getElementById('importFileInput').value='';
+  document.getElementById('importFileInput').click();
+}
+
+function handleImport(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let payload;
+    try{ payload=JSON.parse(e.target.result); }
+    catch{ showToast('JSONファイルの読み込みに失敗しました'); return; }
+
+    if(!payload?.data){ showToast('形式が正しくありません'); return; }
+
+    const imp=payload.data;
+    // 重複確認：日付ごとのレコード数を集計
+    const keysHW =Object.keys(imp[KEY_HW]||{});
+    const keysSH =Object.keys(imp[KEY_SH]||{});
+    const keysMM =Object.keys(imp[KEY_MM]||{});
+    const keysSB =Object.keys(imp[KEY_SB]||{});
+    const allDates=[...new Set([...keysHW,...keysSH,...keysMM,...keysSB])].sort();
+
+    const curHW=ls.get(KEY_HW,{}), curSH=ls.get(KEY_SH,{}),
+          curMM=ls.get(KEY_MM,{}), curSB=ls.get(KEY_SB,{});
+
+    const overlap=allDates.filter(d=>
+      curHW[d]||curSH[d]||curMM[d]||curSB[d]
+    );
+
+    let msg=`インポート内容:
+・日付データ ${allDates.length} 件`;
+    if(overlap.length){
+      msg+=`
+・うち既存と重複: ${overlap.length} 件`;
+      msg+=`
+  (${overlap.slice(0,5).map(fmtShort).join(', ')}${overlap.length>5?' …':''}）`;
+      msg+=`
+
+重複は全てインポート側で上書きします。
+続けますか？`;
+    } else {
+      msg+='\n重複なし。続けますか？';
+    }
+
+    if(!confirm(msg)) return;
+
+    // マージ（インポート優先で上書き）
+    const mergeObj=(cur,imp)=>Object.assign({},cur,imp);
+
+    ls.set(KEY_HW, mergeObj(curHW, imp[KEY_HW]||{}));
+    ls.set(KEY_SH, mergeObj(curSH, imp[KEY_SH]||{}));
+    ls.set(KEY_MM, mergeObj(curMM, imp[KEY_MM]||{}));
+    ls.set(KEY_SB, mergeObj(curSB, imp[KEY_SB]||{}));
+    // 名前・観点はインポート側を優先（上書き）
+    if(imp[KEY_NAMES]) ls.set(KEY_NAMES, imp[KEY_NAMES]);
+    if(imp[KEY_CKPTS]) ls.set(KEY_CKPTS, imp[KEY_CKPTS]);
+    names=ls.get(KEY_NAMES,{});
+
+    showToast(`インポート完了 — ${allDates.length}件の日付データを取り込みました`);
+    closeHistory();
+    buildGrid();
+    // 履歴を再表示
+    setTimeout(()=>{ requestHistory(); }, 400);
+  };
+  reader.readAsText(file);
+}
+
 function exportAllCSV(){
   const hw=ls.get(KEY_HW,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
   const keys=[...new Set([...Object.keys(hw),...Object.keys(sh),...Object.keys(mm),...Object.keys(sb)])].sort();
