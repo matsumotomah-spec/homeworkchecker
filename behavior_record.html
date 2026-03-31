@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>行動記録・所見文ツール｜特別支援学級</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #FDF8F2; font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif; color: #3D3028; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    input, textarea, select, button { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUBJECTS = ["国語", "算数", "生活", "図工", "音楽", "体育", "道徳", "特別活動", "自立活動", "その他"];
+    const SEMESTERS = ["前期", "後期"];
+
+    const getSemesterMonths = (semester) => {
+      if (semester === "前期") return [4, 5, 6, 7, 8, 9];
+      if (semester === "後期") return [10, 11, 12, 1, 2, 3];
+      return [];
+    };
+    const filterBySemester = (recs, semester) => {
+      const months = getSemesterMonths(semester);
+      return recs.filter(r => months.includes(parseInt(r.date.split("-")[1], 10)));
+    };
+
+    const SUBJECT_COLORS = {
+      "国語": "#F4A4A4", "算数": "#A4C4F4", "生活": "#A4E4A4", "図工": "#F4D4A4",
+      "音楽": "#D4A4F4", "体育": "#A4F4D4", "道徳": "#F4A4D4",
+      "特別活動": "#F4F4A4", "自立活動": "#A4D4F4", "その他": "#D4D4D4",
+    };
+
+    const today = () => new Date().toISOString().split("T")[0];
+
+    const AI_LINKS = [
+      { name: "Claude", url: "https://claude.ai", color: "#D97757", icon: "🤖" },
+      { name: "ChatGPT", url: "https://chatgpt.com", color: "#10A37F", icon: "💬" },
+      { name: "Gemini", url: "https://gemini.google.com", color: "#4285F4", icon: "✨" },
+    ];
+
+    function App() {
+      const [tab, setTab] = useState(0);
+      const [students, setStudents] = useState([]);
+      const [records, setRecords] = useState([]);
+      const [loaded, setLoaded] = useState(false);
+
+      const [newName, setNewName] = useState("");
+
+      const [recStudent, setRecStudent] = useState("");
+      const [recSubject, setRecSubject] = useState("国語");
+      const [recDate, setRecDate] = useState(today());
+      const [recNote, setRecNote] = useState("");
+      const [recSaved, setRecSaved] = useState(false);
+
+      const [filterStudent, setFilterStudent] = useState("全員");
+      const [filterSubject, setFilterSubject] = useState("全教科");
+
+      const [sightStudent, setSightStudent] = useState("");
+      const [sightSemester, setSightSemester] = useState("前期");
+      const [promptText, setPromptText] = useState("");
+      const [copied, setCopied] = useState(false);
+
+      useEffect(() => {
+        try { const s = localStorage.getItem("shoken_students_v2"); if (s) setStudents(JSON.parse(s)); } catch {}
+        try { const r = localStorage.getItem("shoken_records_v2"); if (r) setRecords(JSON.parse(r)); } catch {}
+        setLoaded(true);
+      }, []);
+
+      const saveStudents = (list) => {
+        setStudents(list);
+        try { localStorage.setItem("shoken_students_v2", JSON.stringify(list)); } catch {}
+      };
+      const saveRecords = (list) => {
+        setRecords(list);
+        try { localStorage.setItem("shoken_records_v2", JSON.stringify(list)); } catch {}
+      };
+
+      const addStudent = () => {
+        const name = newName.trim();
+        if (!name || students.includes(name)) return;
+        saveStudents([...students, name]);
+        setNewName("");
+      };
+
+      const removeStudent = (name) => {
+        if (!window.confirm("「" + name + "」を削除しますか？この児童の記録も全て削除されます。")) return;
+        saveStudents(students.filter(s => s !== name));
+        saveRecords(records.filter(r => r.studentName !== name));
+      };
+
+      const addRecord = () => {
+        if (!recStudent || !recNote.trim()) return;
+        const rec = { id: Date.now(), date: recDate, studentName: recStudent, subject: recSubject, note: recNote.trim() };
+        saveRecords([...records, rec]);
+        setRecNote("");
+        setRecSaved(true);
+        setTimeout(() => setRecSaved(false), 2000);
+      };
+
+      const deleteRecord = (id) => saveRecords(records.filter(r => r.id !== id));
+
+      const filteredRecords = records
+        .filter(r => filterStudent === "全員" || r.studentName === filterStudent)
+        .filter(r => filterSubject === "全教科" || r.subject === filterSubject)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      const generatePrompt = () => {
+        if (!sightStudent) return;
+        const sRecs = filterBySemester(records.filter(r => r.studentName === sightStudent), sightSemester);
+        const rangeLabel = sightSemester === "前期" ? "4〜9月" : "10〜3月";
+        if (sRecs.length === 0) {
+          alert("この児童の" + sightSemester + "（" + rangeLabel + "）の記録がありません。\n記録の日付を確認してください。");
+          return;
+        }
+        const recText = sRecs
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map(r => "[" + r.date + "・" + r.subject + "] " + r.note)
+          .join("\n");
+
+        const prompt = "あなたは小学校特別支援学級の担任教師です。以下は" + sightStudent + "さんの" + sightSemester + "（" + rangeLabel + "）の行動・学習記録です。この記録をもとに、小学校通知表の「所見文」を作成してください。\n\n条件：\n- 保護者が読む温かみのある文体（です・ます調）\n- 200〜250字程度\n- 具体的なエピソードを盛り込む\n- 成長・頑張りを中心にポジティブな表現\n- 特別支援学級らしい個別の成長に焦点を当てた内容\n- 所見文のみ出力（前置き・説明不要）\n\n記録：\n" + recText;
+
+        setPromptText(prompt);
+        setCopied(false);
+      };
+
+      const copyPrompt = () => {
+        navigator.clipboard.writeText(promptText).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 3000);
+        });
+      };
+
+      const tabs = [
+        { label: "👥 児童管理", id: 0 },
+        { label: "✏️ 記録入力", id: 1 },
+        { label: "📋 記録一覧", id: 2 },
+        { label: "📝 所見生成", id: 3 },
+      ];
+
+      if (!loaded) return (
+        <div style={styles.loadingWrap}>
+          <div style={styles.spinner} />
+          <p style={{ color: "#8B7355", marginTop: 12 }}>読み込み中…</p>
+        </div>
+      );
+
+      return (
+        <div style={styles.root}>
+          <div style={styles.header}>
+            <div style={styles.headerInner}>
+              <span style={styles.headerIcon}>📓</span>
+              <div>
+                <h1 style={styles.headerTitle}>行動記録・所見文ツール</h1>
+                <p style={styles.headerSub}>特別支援学級 担任支援システム</p>
+              </div>
+              <div style={styles.headerBadge}>
+                <span style={styles.badgeText}>児童 {students.length}名</span>
+                <span style={styles.badgeDot} />
+                <span style={styles.badgeText}>記録 {records.length}件</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.tabBar}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                style={Object.assign({}, styles.tabBtn, tab === t.id ? styles.tabActive : {})}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={styles.content}>
+
+            {/* 児童管理 */}
+            {tab === 0 && (
+              <div style={styles.section}>
+                <h2 style={styles.sectionTitle}>児童の追加・管理</h2>
+                <div style={styles.addRow}>
+                  <input value={newName} onChange={e => setNewName(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && addStudent()}
+                    placeholder="児童名を入力（例：山田 太郎）" style={styles.input} />
+                  <button onClick={addStudent} style={styles.btnPrimary}>追加</button>
+                </div>
+                {students.length === 0 ? (
+                  <div style={styles.emptyState}>
+                    <span style={{ fontSize: 40 }}>👦</span>
+                    <p style={{ color: "#B0A090", marginTop: 8 }}>まず児童を追加してください</p>
+                  </div>
+                ) : (
+                  <div style={styles.studentGrid}>
+                    {students.map(s => (
+                      <div key={s} style={styles.studentCard}>
+                        <span style={styles.studentAvatar}>{s.charAt(0)}</span>
+                        <span style={styles.studentName}>{s}</span>
+                        <span style={styles.studentCount}>{records.filter(r => r.studentName === s).length}件</span>
+                        <button onClick={() => removeStudent(s)} style={styles.btnDelete}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 記録入力 */}
+            {tab === 1 && (
+              <div style={styles.section}>
+                <h2 style={styles.sectionTitle}>今日の記録を入力</h2>
+                {students.length === 0 ? (
+                  <div style={styles.alertBox}>⚠️ 先に「児童管理」タブで児童を追加してください。</div>
+                ) : (
+                  <div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>👤 児童</label>
+                      <div style={styles.chipRow}>
+                        {students.map(s => (
+                          <button key={s} onClick={() => setRecStudent(s)}
+                            style={Object.assign({}, styles.chip, recStudent === s ? styles.chipActive : {})}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>📚 教科</label>
+                      <div style={styles.chipRow}>
+                        {SUBJECTS.map(s => (
+                          <button key={s} onClick={() => setRecSubject(s)}
+                            style={Object.assign({}, styles.chip, recSubject === s ? { backgroundColor: SUBJECT_COLORS[s], borderColor: SUBJECT_COLORS[s], color: "#3D3028", fontWeight: 600 } : {})}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>📅 日付</label>
+                      <input type="date" value={recDate} onChange={e => setRecDate(e.target.value)}
+                        style={Object.assign({}, styles.input, { maxWidth: 200 })} />
+                    </div>
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>📝 行動メモ</label>
+                      <textarea value={recNote} onChange={e => setRecNote(e.target.value)}
+                        placeholder={"例：漢字練習で「花」の字を自分から3回書いて練習した。\n算数の足し算で、指を使いながら正解できた。"}
+                        style={styles.textarea} rows={4} />
+                    </div>
+                    <div style={styles.saveRow}>
+                      <div style={styles.previewTag}>
+                        {recStudent && <span style={styles.previewChip}>{recStudent}</span>}
+                        {recSubject && <span style={Object.assign({}, styles.previewChip, { backgroundColor: SUBJECT_COLORS[recSubject] })}>{recSubject}</span>}
+                        {recDate && <span style={styles.previewChip}>{recDate}</span>}
+                      </div>
+                      <button onClick={addRecord} disabled={!recStudent || !recNote.trim()}
+                        style={Object.assign({}, styles.btnPrimary, { opacity: (!recStudent || !recNote.trim()) ? 0.4 : 1 })}>
+                        {recSaved ? "✅ 保存しました！" : "記録を保存"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 記録一覧 */}
+            {tab === 2 && (
+              <div style={styles.section}>
+                <h2 style={styles.sectionTitle}>記録一覧 ({filteredRecords.length}件)</h2>
+                <div style={styles.filterBar}>
+                  <div style={styles.filterGroup}>
+                    <span style={styles.filterLabel}>児童：</span>
+                    <select value={filterStudent} onChange={e => setFilterStudent(e.target.value)} style={styles.select}>
+                      <option value="全員">全員</option>
+                      {students.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div style={styles.filterGroup}>
+                    <span style={styles.filterLabel}>教科：</span>
+                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} style={styles.select}>
+                      <option value="全教科">全教科</option>
+                      {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+                {filteredRecords.length === 0 ? (
+                  <div style={styles.emptyState}>
+                    <span style={{ fontSize: 40 }}>📭</span>
+                    <p style={{ color: "#B0A090", marginTop: 8 }}>記録がありません</p>
+                  </div>
+                ) : (
+                  <div style={styles.recordList}>
+                    {filteredRecords.map(r => (
+                      <div key={r.id} style={styles.recordCard}>
+                        <div style={styles.recordHeader}>
+                          <div style={styles.recordMeta}>
+                            <span style={styles.recordName}>{r.studentName}</span>
+                            <span style={Object.assign({}, styles.subjectBadge, { backgroundColor: SUBJECT_COLORS[r.subject] })}>{r.subject}</span>
+                            <span style={styles.recordDate}>{r.date}</span>
+                          </div>
+                          <button onClick={() => deleteRecord(r.id)} style={styles.btnDeleteSmall}>🗑</button>
+                        </div>
+                        <p style={styles.recordNote}>{r.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 所見生成 */}
+            {tab === 3 && (
+              <div style={styles.section}>
+                <h2 style={styles.sectionTitle}>所見文を自動生成</h2>
+
+                {students.length === 0 ? (
+                  <div style={styles.alertBox}>⚠️ 先に「児童管理」タブで児童を追加してください。</div>
+                ) : (
+                  <div>
+                    {/* 手順バナー */}
+                    <div style={styles.howToBanner}>
+                      <p style={styles.howToTitle}>📋 使い方</p>
+                      <ol style={styles.howToList}>
+                        <li>児童・学期を選んで「プロンプトを作成」ボタンを押す</li>
+                        <li>表示されたテキストを「コピーする」ボタンでコピー</li>
+                        <li>表示されるリンクからAIサービスを開き、貼り付けて送信</li>
+                        <li>生成された所見文を確認・調整して通知表に転記</li>
+                      </ol>
+                    </div>
+
+                    {/* 児童選択 */}
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>👤 児童を選択</label>
+                      <div style={styles.chipRow}>
+                        {students.map(s => (
+                          <button key={s} onClick={() => { setSightStudent(s); setPromptText(""); setCopied(false); }}
+                            style={Object.assign({}, styles.chip, sightStudent === s ? styles.chipActive : {})}>
+                            {s}
+                            <span style={styles.chipCount}>{records.filter(r => r.studentName === s).length}件</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 学期選択 */}
+                    <div style={styles.fieldGroup}>
+                      <label style={styles.fieldLabel}>📅 学期（対象期間）</label>
+                      <div style={styles.chipRow}>
+                        {SEMESTERS.map(s => (
+                          <button key={s} onClick={() => { setSightSemester(s); setPromptText(""); setCopied(false); }}
+                            style={Object.assign({}, styles.chip, sightSemester === s ? styles.chipActive : {})}>
+                            {s}
+                            <span style={{ fontSize: 11, opacity: 0.75 }}>{s === "前期" ? "4〜9月" : "10〜3月"}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 記録プレビュー */}
+                    {sightStudent && (() => {
+                      const semRecs = filterBySemester(records.filter(r => r.studentName === sightStudent), sightSemester);
+                      const rangeLabel = sightSemester === "前期" ? "4〜9月" : "10〜3月";
+                      return (
+                        <div style={styles.sightPreviewBox}>
+                          <p style={styles.sightPreviewText}>
+                            📊 <strong>{sightStudent}</strong>さん・{sightSemester}（{rangeLabel}）の記録：
+                            <strong style={{ color: semRecs.length === 0 ? "#C07040" : "#4B7B5B" }}>{semRecs.length}件</strong>
+                            {semRecs.length === 0 && <span style={{ fontSize: 12, color: "#C07040", marginLeft: 8 }}>※この期間の記録がありません</span>}
+                          </p>
+                          <div style={styles.sightSubjectBreakdown}>
+                            {SUBJECTS.filter(s => semRecs.some(r => r.subject === s)).map(s => (
+                              <span key={s} style={Object.assign({}, styles.subjectBadge, { backgroundColor: SUBJECT_COLORS[s] })}>
+                                {s} {semRecs.filter(r => r.subject === s).length}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* プロンプト作成ボタン */}
+                    <button onClick={generatePrompt} disabled={!sightStudent}
+                      style={Object.assign({}, styles.btnGenerate, { opacity: !sightStudent ? 0.5 : 1, marginBottom: 24 })}>
+                      📝 プロンプトを作成する
+                    </button>
+
+                    {/* プロンプト表示エリア */}
+                    {promptText && (
+                      <div style={styles.promptBox}>
+
+                        {/* ヘッダー＋コピーボタン */}
+                        <div style={styles.promptHeader}>
+                          <span style={styles.promptHeaderTitle}>✅ プロンプトが作成されました</span>
+                          <button onClick={copyPrompt}
+                            style={Object.assign({}, styles.btnCopy, copied ? styles.btnCopied : {})}>
+                            {copied ? "✅ コピー済み！" : "📋 コピーする"}
+                          </button>
+                        </div>
+
+                        {/* プロンプト本文 */}
+                        <textarea readOnly value={promptText} rows={10}
+                          onClick={e => e.target.select()}
+                          style={styles.promptTextarea} />
+
+                        <p style={styles.promptHint}>
+                          ↑ テキストをクリックすると全選択できます。「コピーする」または Ctrl+C（Mac: ⌘+C）でコピーしてください。
+                        </p>
+
+                        {/* AIリンク */}
+                        <div style={styles.aiLinksSection}>
+                          <p style={styles.aiLinksTitle}>② コピーしたら、以下のAIサービスを開いて貼り付けてください：</p>
+                          <div style={styles.aiLinksRow}>
+                            {AI_LINKS.map(ai => (
+                              <a key={ai.name} href={ai.url} target="_blank" rel="noopener noreferrer"
+                                style={Object.assign({}, styles.aiLinkBtn, { borderColor: ai.color, color: ai.color })}>
+                                <span>{ai.icon}</span>
+                                <span style={{ fontWeight: 700 }}>{ai.name}</span>
+                                <span style={{ fontSize: 12, opacity: 0.6 }}>→</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 注意事項 */}
+                        <div style={styles.noteBox}>
+                          <p style={{ fontWeight: 700, marginBottom: 6, fontSize: 13, color: "#7B6B4B" }}>💡 貼り付け後のポイント</p>
+                          <ul style={styles.noteList}>
+                            <li>生成された文章は必ず読んで、事実確認・表現の調整を行ってください</li>
+                            <li>「もう少し短くして」「〇〇のエピソードを強調して」など追加指示も可能です</li>
+                            <li>氏名など個人情報の取り扱いにご注意ください</li>
+                          </ul>
+                        </div>
+
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    const styles = {
+      root: { backgroundColor: "#FDF8F2", minHeight: "100vh", color: "#3D3028" },
+      loadingWrap: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", backgroundColor: "#FDF8F2" },
+      spinner: { width: 36, height: 36, border: "3px solid #E8D8C8", borderTopColor: "#C8856A", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
+      header: { background: "linear-gradient(135deg, #7B9E87 0%, #5B7E6C 100%)", padding: "20px 24px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.15)" },
+      headerInner: { display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" },
+      headerIcon: { fontSize: 32 },
+      headerTitle: { margin: 0, fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: 1 },
+      headerSub: { margin: "2px 0 0", fontSize: 12, color: "rgba(255,255,255,0.75)" },
+      headerBadge: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 20, padding: "4px 14px" },
+      badgeText: { fontSize: 13, color: "#fff" },
+      badgeDot: { width: 4, height: 4, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.5)" },
+      tabBar: { display: "flex", borderBottom: "2px solid #E8D8C4", backgroundColor: "#FDF8F2", overflowX: "auto" },
+      tabBtn: { flex: 1, minWidth: 100, padding: "12px 8px", border: "none", backgroundColor: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#8B7355", whiteSpace: "nowrap", borderBottom: "3px solid transparent", marginBottom: -2, fontFamily: "inherit" },
+      tabActive: { color: "#5B7E6C", borderBottomColor: "#5B7E6C", fontWeight: 700, backgroundColor: "#F0F7F3" },
+      content: { padding: "20px 16px 40px", maxWidth: 720, margin: "0 auto" },
+      section: {},
+      sectionTitle: { fontSize: 16, fontWeight: 700, color: "#5B6E5B", marginBottom: 20, paddingBottom: 8, borderBottom: "1px solid #E0D0BC" },
+      addRow: { display: "flex", gap: 10, marginBottom: 20 },
+      input: { flex: 1, padding: "10px 14px", border: "1.5px solid #D8C8B4", borderRadius: 10, fontSize: 14, backgroundColor: "#fff", outline: "none", color: "#3D3028" },
+      btnPrimary: { padding: "10px 20px", backgroundColor: "#5B7E6C", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, whiteSpace: "nowrap" },
+      btnDelete: { background: "none", border: "none", color: "#C07060", cursor: "pointer", fontSize: 16, padding: "0 4px" },
+      btnDeleteSmall: { background: "none", border: "none", color: "#C0A090", cursor: "pointer", fontSize: 16, padding: "2px 4px" },
+      studentGrid: { display: "grid", gap: 10 },
+      studentCard: { display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", backgroundColor: "#fff", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", border: "1px solid #EAD8C4" },
+      studentAvatar: { width: 36, height: 36, borderRadius: "50%", backgroundColor: "#D4E8DA", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#5B7E6C", flexShrink: 0 },
+      studentName: { flex: 1, fontSize: 15, fontWeight: 600 },
+      studentCount: { fontSize: 12, color: "#A09080", backgroundColor: "#F4EEE4", padding: "2px 10px", borderRadius: 10 },
+      emptyState: { textAlign: "center", padding: "50px 20px", color: "#C0A890" },
+      alertBox: { backgroundColor: "#FFF3E0", border: "1px solid #F4C870", borderRadius: 10, padding: "14px 18px", fontSize: 14, color: "#9B7020" },
+      fieldGroup: { marginBottom: 20 },
+      fieldLabel: { display: "block", fontSize: 13, fontWeight: 700, color: "#6B7E6B", marginBottom: 10 },
+      chipRow: { display: "flex", flexWrap: "wrap", gap: 8 },
+      chip: { padding: "7px 14px", border: "1.5px solid #D8C8B4", borderRadius: 20, backgroundColor: "#fff", cursor: "pointer", fontSize: 13, color: "#7B6B5B", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" },
+      chipActive: { backgroundColor: "#5B7E6C", borderColor: "#5B7E6C", color: "#fff", fontWeight: 600 },
+      chipCount: { fontSize: 11, backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 10, padding: "1px 7px" },
+      textarea: { width: "100%", padding: "12px 14px", border: "1.5px solid #D8C8B4", borderRadius: 10, fontSize: 14, resize: "vertical", fontFamily: "inherit", backgroundColor: "#fff", outline: "none", color: "#3D3028", lineHeight: 1.7, boxSizing: "border-box" },
+      saveRow: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginTop: 4 },
+      previewTag: { display: "flex", gap: 6, flexWrap: "wrap" },
+      previewChip: { fontSize: 12, padding: "3px 10px", borderRadius: 10, backgroundColor: "#E8F4E8", color: "#4B6B4B" },
+      filterBar: { display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20, padding: "12px 16px", backgroundColor: "#F4EEE4", borderRadius: 10 },
+      filterGroup: { display: "flex", alignItems: "center", gap: 8 },
+      filterLabel: { fontSize: 13, color: "#8B7355", fontWeight: 600 },
+      select: { padding: "6px 12px", border: "1.5px solid #D8C8B4", borderRadius: 8, fontSize: 13, backgroundColor: "#fff", fontFamily: "inherit", color: "#3D3028" },
+      recordList: { display: "grid", gap: 12 },
+      recordCard: { backgroundColor: "#fff", borderRadius: 12, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", border: "1px solid #EAD8C4" },
+      recordHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+      recordMeta: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
+      recordName: { fontSize: 14, fontWeight: 700, color: "#4B5E4B" },
+      subjectBadge: { fontSize: 12, padding: "2px 10px", borderRadius: 10, fontWeight: 600 },
+      recordDate: { fontSize: 12, color: "#A09080" },
+      recordNote: { fontSize: 14, color: "#5D5048", lineHeight: 1.7, margin: 0 },
+      howToBanner: { backgroundColor: "#EEF7EE", border: "1px solid #C0D8C0", borderRadius: 10, padding: "14px 18px", marginBottom: 24 },
+      howToTitle: { fontWeight: 700, fontSize: 14, color: "#4B6B4B", marginBottom: 8 },
+      howToList: { paddingLeft: 20, fontSize: 13, color: "#5B7B5B", lineHeight: 2.2 },
+      sightPreviewBox: { backgroundColor: "#F0F7F0", borderRadius: 10, padding: "12px 16px", marginBottom: 20, border: "1px solid #C8DCC8" },
+      sightPreviewText: { fontSize: 14, margin: "0 0 8px", color: "#4B6B4B" },
+      sightSubjectBreakdown: { display: "flex", flexWrap: "wrap", gap: 6 },
+      btnGenerate: { width: "100%", padding: "14px", backgroundColor: "#7B9E87", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 3px 12px rgba(91,126,108,0.35)" },
+      promptBox: { backgroundColor: "#fff", borderRadius: 14, border: "1.5px solid #C8DCC8", boxShadow: "0 2px 10px rgba(0,0,0,0.08)", overflow: "hidden" },
+      promptHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", backgroundColor: "#F0F7F0", borderBottom: "1px solid #D8ECD8", flexWrap: "wrap", gap: 8 },
+      promptHeaderTitle: { fontSize: 14, fontWeight: 700, color: "#4B7B5B" },
+      btnCopy: { padding: "8px 18px", backgroundColor: "#5B7E6C", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: "inherit" },
+      btnCopied: { backgroundColor: "#3A6B5A" },
+      promptTextarea: { width: "100%", padding: "16px 18px", border: "none", fontSize: 13, lineHeight: 1.8, fontFamily: "inherit", resize: "vertical", backgroundColor: "#FDFAF6", color: "#3D3028", outline: "none", boxSizing: "border-box", borderBottom: "1px solid #E8DCC8", cursor: "text" },
+      promptHint: { fontSize: 12, color: "#A09080", padding: "8px 18px 14px", borderBottom: "1px solid #E8DCC8" },
+      aiLinksSection: { padding: "16px 18px", borderBottom: "1px solid #E8DCC8" },
+      aiLinksTitle: { fontSize: 13, fontWeight: 700, color: "#5B6E5B", marginBottom: 12 },
+      aiLinksRow: { display: "flex", gap: 10, flexWrap: "wrap" },
+      aiLinkBtn: { display: "flex", alignItems: "center", gap: 6, padding: "10px 18px", border: "2px solid", borderRadius: 10, textDecoration: "none", fontSize: 14, backgroundColor: "#fff" },
+      noteBox: { padding: "16px 18px", backgroundColor: "#FFFBF0" },
+      noteList: { paddingLeft: 18, fontSize: 13, color: "#7B6B4B", lineHeight: 2.2, margin: 0 },
+    };
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
