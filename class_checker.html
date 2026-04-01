@@ -32,6 +32,8 @@
   .section-label{font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--ink-light);margin-bottom:8px;border-left:3px solid var(--mode-accent);padding-left:8px;display:flex;align-items:center;gap:8px;}
   .edit-badge{font-size:9px;background:var(--green);color:white;padding:2px 6px;display:none;} .edit-badge.visible{display:inline-block;}
   .number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .num-btn.seat-empty{background:var(--bg);border:2px dashed var(--grid-line);box-shadow:none;cursor:default;pointer-events:none;}
+  .num-btn.seat-empty .btn-num{color:var(--grid-line);}
   .num-btn{border:2px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;position:relative;transition:transform .12s,box-shadow .12s,background .15s,border-color .15s;-webkit-tap-highlight-color:transparent;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);padding:4px 3px;min-height:70px;gap:1px;overflow:hidden;}
   .num-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
   .btn-num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;line-height:1;}
@@ -49,6 +51,37 @@
   .num-btn.hw-a .btn-num{color:#fff;} .num-btn.hw-a .btn-num.small{color:rgba(255,255,255,.6);} .num-btn.hw-a .btn-name{color:rgba(255,255,255,.8);}
   .num-btn.hw-a::after{content:'欠';position:absolute;top:3px;right:4px;font-size:10px;font-weight:900;color:rgba(255,255,255,.6);font-family:sans-serif;}
 
+  /* 週宿題 */
+  .tab-btn.active-wh{background:#8b5e00;color:#fff;}
+  .num-btn.wh-s{background:#1d6638;border-color:#1d6638;box-shadow:none;}
+  .num-btn.wh-s .btn-num{color:#fff;}.num-btn.wh-s .btn-num.small{color:rgba(255,255,255,.7);}.num-btn.wh-s .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.wh-s::after{content:'○';position:absolute;top:3px;right:5px;font-size:11px;font-weight:900;color:rgba(255,255,255,.75);font-family:sans-serif;}
+  .num-btn.wh-a{background:#1a1208;border-color:#1a1208;box-shadow:none;}
+  .num-btn.wh-a .btn-num{color:#fff;}.num-btn.wh-a .btn-num.small{color:rgba(255,255,255,.6);}.num-btn.wh-a .btn-name{color:rgba(255,255,255,.8);}
+  .num-btn.wh-a::after{content:'欠';position:absolute;top:3px;right:4px;font-size:10px;font-weight:900;color:rgba(255,255,255,.6);font-family:sans-serif;}
+  /* 経過日数警告 */
+  .num-btn.wh-warn5{border-color:#b8860b;box-shadow:3px 3px 0 #b8860b;background:#fffbe6;}
+  .num-btn.wh-warn5 .btn-sub{color:#b8860b;font-weight:700;}
+  .num-btn.wh-warn7{border-color:#c84b2f;box-shadow:3px 3px 0 #c84b2f;background:#fff0ed;}
+  .num-btn.wh-warn7 .btn-sub{color:#c84b2f;font-weight:700;}
+  /* 週宿題種類セレクタバー */
+  .wh-toolbar{padding:7px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;}
+  .wh-type-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .wh-type-tab.act{background:#8b5e00;color:white;border-color:#8b5e00;}
+  .wh-add-tab{flex-shrink:0;padding:5px 10px;border:2px dashed var(--grid-line);background:transparent;font-size:18px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;}
+  /* 週宿題種類追加モーダル */
+  .wh-add-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.75);z-index:300;align-items:center;justify-content:center;}
+  .wh-add-overlay.open{display:flex;}
+  .wh-add-box{background:var(--paper);border:3px solid var(--ink);padding:22px 18px 18px;width:88%;max-width:340px;box-shadow:6px 6px 0 var(--ink);}
+  .wh-add-title{font-size:14px;font-weight:900;margin-bottom:10px;}
+  .wh-type-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .wh-type-del-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border:1.5px solid var(--grid-line);background:var(--bg);font-size:12px;font-weight:700;}
+  .wh-type-del-btn{cursor:pointer;color:#c84b2f;font-weight:900;font-size:13px;}
+  .wh-inp-row{display:flex;gap:6px;margin-bottom:10px;}
+  .wh-inp{flex:1;height:40px;border:2px solid var(--ink);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:15px;font-weight:700;padding:0 9px;color:var(--ink);outline:none;}
+  .wh-inp:focus{border-color:#8b5e00;background:var(--paper);}
+  .wh-inp-ok{height:40px;padding:0 12px;border:2px solid #8b5e00;background:#8b5e00;color:white;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  .wh-cancel-btn{width:100%;height:38px;border:2px solid var(--ink-light);background:var(--paper);color:var(--ink-light);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
   /* 賞状 */
   .num-btn.sh-p1{background:#fff0ed;border-color:#c84b2f;box-shadow:3px 3px 0 #c84b2f;} .num-btn.sh-p1 .btn-sub{color:#c84b2f;font-weight:700;}
   .num-btn.sh-p2{background:#fff8ed;border-color:#d4820a;box-shadow:3px 3px 0 #d4820a;} .num-btn.sh-p2 .btn-sub{color:#d4820a;font-weight:700;}
@@ -240,6 +273,62 @@
 
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;font-size:13px;font-weight:700;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;}
+  .btn-seat{background:#5a2d80;color:white;border-color:#5a2d80;}
+  /* ─── 席替えモーダル ─── */
+  .seat-overlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:500;flex-direction:column;overflow:hidden;}
+  .seat-overlay.open{display:flex;}
+  .seat-header{background:#f4f0fc;border-bottom:3px solid var(--ink);padding:10px 14px 8px;flex-shrink:0;}
+  .seat-header-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .seat-back{height:34px;padding:0 10px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .seat-title{font-size:14px;font-weight:900;flex:1;}
+  .seat-save-btn{height:34px;padding:0 12px;border:2px solid #5a2d80;background:#5a2d80;color:white;font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);}
+  .seat-save-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+  .seat-controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+  .seat-ctrl-num{width:44px;height:30px;border:2px solid var(--ink);background:var(--bg);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;text-align:center;color:var(--ink);outline:none;}
+  .seat-ctrl-sep{font-size:13px;font-weight:700;color:var(--ink-light);}
+  .seat-ctrl-btn{height:30px;padding:0 9px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:1px 1px 0 var(--ink);}
+  .seat-ctrl-btn:active{transform:translate(1px,1px);}
+  .seat-ctrl-btn.pur{background:#5a2d80;color:white;border-color:#5a2d80;}
+  .seat-toolbar{padding:6px 12px;border-bottom:1px solid #d4cfc5;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0;background:#f9f5fc;}
+  .seat-tool-btn{height:30px;padding:0 9px;border:1.5px solid #b0a0c0;background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;font-weight:700;cursor:pointer;color:#7b5a9a;-webkit-tap-highlight-color:transparent;}
+  .seat-tool-btn:active{background:#5a2d80;color:white;border-color:#5a2d80;}
+  .seat-body{flex:1;overflow:auto;padding:12px;}
+  .seat-blackboard{background:#2a3a2a;padding:6px;margin-bottom:12px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.2em;}
+  .seat-grid-inner{display:grid;gap:5px;width:fit-content;margin:0 auto;}
+  .seat-card{width:68px;height:60px;border:2px solid var(--ink);background:var(--paper);cursor:grab;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:2px 2px 0 var(--ink);transition:box-shadow .1s;}
+  .seat-card:active{cursor:grabbing;}
+  .seat-card.dragging{opacity:.35;box-shadow:none;}
+  .seat-card.drag-over{border-color:#5a2d80;box-shadow:0 0 0 2px #5a2d80;background:#f3eef8;}
+  .seat-card.s-empty{background:#f0edf5;border:2px dashed #c5b8d8;cursor:default;}
+  .seat-card .sc-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#9a8aaa;line-height:1;}
+  .seat-card .sc-name{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:900;color:var(--ink);line-height:1.2;text-align:center;padding:0 2px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .seat-card.s-empty .sc-name{font-size:10px;color:#b0a0c0;}
+  .seat-card .sc-pos{position:absolute;bottom:1px;right:2px;font-size:7px;color:#c5b8d8;font-family:'JetBrains Mono',monospace;}
+  .seat-bbar{flex-shrink:0;background:var(--paper);border-top:3px solid var(--ink);padding:8px 12px;display:flex;gap:7px;box-shadow:0 -2px 0 var(--shadow);}
+  .seat-bbar-btn{flex:1;height:46px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:2px 2px 0 var(--ink);line-height:1.3;}
+  .seat-bbar-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+  .seat-bbar-pur{background:#5a2d80;color:white;border-color:#5a2d80;}
+  .seat-bbar-ink{background:var(--ink);color:white;}
+  /* CSV/割当モーダル（席替え内） */
+  .sov{display:none;position:fixed;inset:0;background:rgba(26,18,8,.72);z-index:600;align-items:center;justify-content:center;}
+  .sov.open{display:flex;}
+  .sbox{background:var(--paper);border:3px solid var(--ink);padding:20px 16px 16px;width:90%;max-width:360px;box-shadow:5px 5px 0 var(--ink);max-height:85vh;overflow-y:auto;}
+  .sbox-title{font-size:14px;font-weight:900;margin-bottom:10px;}
+  .sbox-sub{font-size:11px;color:var(--ink-light);margin-bottom:8px;}
+  .sbox-ta{width:100%;min-height:80px;border:2px solid var(--ink);background:var(--bg);font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px;color:var(--ink);outline:none;resize:vertical;margin-bottom:8px;}
+  .sbox-ta:focus{border-color:#5a2d80;}
+  .sbox-file-btn{width:100%;height:36px;border:2px dashed #c5b8d8;background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;color:var(--ink-light);cursor:pointer;margin-bottom:8px;}
+  .sbox-btns{display:flex;gap:7px;margin-top:12px;}
+  .sb2{flex:1;height:42px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  .sb2:active{opacity:.8;}
+  .sb2-cancel{background:var(--paper);color:var(--ink-light);}
+  .sb2-ok{background:#5a2d80;color:white;border-color:#5a2d80;flex:2;}
+  .sb2-green{background:#2e7d4f;color:white;border-color:#2e7d4f;flex:2;}
+  .assign-list2{max-height:200px;overflow-y:auto;border:1.5px solid #d4cfc5;background:var(--bg);padding:5px;}
+  .assign-item2{display:flex;align-items:center;gap:7px;padding:3px 2px;border-bottom:1px solid #d4cfc5;font-size:12px;}
+  .assign-item2:last-child{border-bottom:none;}
+  .assign-pos2{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-light);width:36px;flex-shrink:0;}
+  .assign-sel2{flex:1;height:30px;border:1.5px solid #d4cfc5;background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;color:var(--ink);outline:none;}
   .bg-lines{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--mode-sub) 39px,var(--mode-sub) 40px);}
   /* 観点選択 */
   .sb-kan-sel{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
@@ -278,6 +367,7 @@
 <div class="header">
   <div class="tabs">
     <button class="tab-btn" id="tab-hw" onclick="switchMode('hw')">📝 宿題</button>
+    <button class="tab-btn" id="tab-wh" onclick="switchMode('wh')">📖 週宿題</button>
     <button class="tab-btn" id="tab-sh" onclick="requestModeSwitch('sh')">🏆 賞状</button>
     <button class="tab-btn" id="tab-mm" onclick="requestModeSwitch('mm')">✎ メモ</button>
     <button class="tab-btn" id="tab-sb" onclick="requestModeSwitch('sb')">📋 提出物</button>
@@ -299,6 +389,10 @@
     <div class="legend-item"><div class="legend-dot" style="background:#fff8ed;border:1.5px solid #d4820a"></div>優先</div>
     <div class="legend-item"><div class="legend-dot" style="background:#fffbe6;border:1.5px solid #b8a000"></div>やや優先</div>
     <div class="legend-item"><div class="legend-dot" style="background:#1d6638"></div>本日渡し済</div>
+  </div>
+  <!-- 週宿題種類バー -->
+  <div id="whToolbar" style="display:none">
+    <div class="wh-toolbar" id="whTabRow"></div>
   </div>
   <!-- 提出物セッションバー -->
   <div id="sbToolbar" style="display:none">
@@ -322,6 +416,7 @@
 <div class="bottom-bar">
   <button class="btn btn-csv" id="btnCsv" onclick="saveAndExportToday()">保存 &amp; CSV</button>
   <button class="btn btn-names" id="btnNames" onclick="requestEditMode()">名前編集</button>
+  <button class="btn btn-seat" id="btnSeat" onclick="openSeatEditor()" style="display:none">🪑 席替え</button>
   <button class="btn btn-hist" onclick="requestHistory()">履歴</button>
 </div>
 
@@ -444,6 +539,80 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- 週宿題種類追加モーダル -->
+<div class="wh-add-overlay" id="whAddOverlay">
+  <div class="wh-add-box">
+    <div class="wh-add-title">📖 週宿題の種類を管理</div>
+    <div id="whTypeList" class="wh-type-list"></div>
+    <div class="wh-inp-row">
+      <input class="wh-inp" type="text" id="whNewType" maxlength="12" placeholder="例：日記、読書記録">
+      <button class="wh-inp-ok" onclick="addWhType()">追加</button>
+    </div>
+    <button class="wh-cancel-btn" onclick="closeWhAdd()">閉じる</button>
+  </div>
+</div>
+
+<!-- 席替えエディタモーダル -->
+<div class="seat-overlay" id="seatOverlay">
+  <div class="seat-header">
+    <div class="seat-header-row">
+      <button class="seat-back" onclick="closeSeatEditor()">← 戻る</button>
+      <span class="seat-title">🪑 席替えエディタ</span>
+      <button class="seat-save-btn" onclick="saveSeatLayout()">💾 保存</button>
+    </div>
+    <div class="seat-controls">
+      <span style="font-size:11px;font-weight:700;color:var(--ink-light)">行</span>
+      <input class="seat-ctrl-num" type="number" id="seatRows" min="1" max="12" value="5">
+      <span class="seat-ctrl-sep">×</span>
+      <span style="font-size:11px;font-weight:700;color:var(--ink-light)">列</span>
+      <input class="seat-ctrl-num" type="number" id="seatCols" min="1" max="12" value="6">
+      <button class="seat-ctrl-btn" onclick="applySeatGrid()">適用</button>
+      <button class="seat-ctrl-btn pur" onclick="openSeatCsv()">📄 CSV</button>
+    </div>
+  </div>
+  <div class="seat-toolbar">
+    <button class="seat-tool-btn" onclick="seatRandomize()">🔀 ランダム</button>
+    <button class="seat-tool-btn" onclick="seatToggleEmpty()">空席 切替</button>
+    <button class="seat-tool-btn" onclick="openSeatAssign()">🔢 番号割当</button>
+  </div>
+  <div class="seat-body">
+    <div class="seat-blackboard">▌ 黒　板 ▐</div>
+    <div class="seat-grid-inner" id="seatGridInner"></div>
+  </div>
+  <div class="seat-bbar">
+    <button class="seat-bbar-btn seat-bbar-pur" onclick="saveSeatAndClose()">💾 保存して閉じる</button>
+    <button class="seat-bbar-btn seat-bbar-ink" onclick="openSeatCsv()">📄 CSV一括登録</button>
+  </div>
+</div>
+
+<!-- 席替えCSVモーダル -->
+<div class="sov" id="seatCsvOv">
+  <div class="sbox">
+    <div class="sbox-title">📄 CSV一括登録</div>
+    <div class="sbox-sub">「番号,名前」形式で1行ずつ。カンマ区切り。</div>
+    <button class="sbox-file-btn" onclick="document.getElementById('seatCsvFile').click()">📂 CSVファイルを選択</button>
+    <input type="file" id="seatCsvFile" accept=".csv,.txt" style="display:none" onchange="loadSeatCsvFile(event)">
+    <textarea class="sbox-ta" id="seatCsvText" placeholder="1,田中&#10;2,佐藤&#10;3,鈴木"></textarea>
+    <div class="sbox-btns">
+      <button class="sb2 sb2-cancel" onclick="closeSeatCsv()">キャンセル</button>
+      <button class="sb2 sb2-ok" onclick="applySeatCsv()">適用</button>
+    </div>
+  </div>
+</div>
+
+<!-- 番号割当モーダル -->
+<div class="sov" id="seatAssignOv">
+  <div class="sbox">
+    <div class="sbox-title">🔢 座席への番号割当</div>
+    <div class="sbox-sub">各マスに出席番号を割り当てます</div>
+    <div class="assign-list2" id="seatAssignList"></div>
+    <div class="sbox-btns">
+      <button class="sb2 sb2-cancel" onclick="closeSeatAssign()">キャンセル</button>
+      <button class="sb2 sb2-green" onclick="applyAssign2()">適用</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══ 定数 ══ */
 const TOTAL=30,WEEKDAYS=['日','月','火','水','木','金','土'],PRIORITY_N=5;
@@ -476,10 +645,13 @@ const SB_RUBRIC={
   ],
 };
 const SB_LABEL={'B':'B','Bp':'B+','A':'A','C':'C','none':'未','abs':'欠'};
+const KEY_WH='cc_wh_v1'; // {'YYYY-MM-DD':{'typeId':{'1':state,...},...}}
+const KEY_WH_TYPES='cc_wh_types_v1'; // [{id,name},...]
 const MODES={
-  hw:{label:'宿題',accent:'#c84b2f',bg:'#f5f0e8',header:'#fffef9',sub:'#d4cfc5'},
-  sh:{label:'賞状',accent:'#2e7d4f',bg:'#eef5f1',header:'#f4faf7',sub:'#c5ddd0'},
-  mm:{label:'メモ',accent:'#1a3a6b',bg:'#eef1f8',header:'#f4f6fc',sub:'#c5cfe0'},
+  hw:{label:'宿題',  accent:'#c84b2f',bg:'#f5f0e8',header:'#fffef9',sub:'#d4cfc5'},
+  wh:{label:'週宿題',accent:'#8b5e00',bg:'#fdf6e3',header:'#fffbf0',sub:'#e8d8b0'},
+  sh:{label:'賞状',  accent:'#2e7d4f',bg:'#eef5f1',header:'#f4faf7',sub:'#c5ddd0'},
+  mm:{label:'メモ',  accent:'#1a3a6b',bg:'#eef1f8',header:'#f4f6fc',sub:'#c5cfe0'},
   sb:{label:'提出物',accent:'#7b3fa0',bg:'#f3eef8',header:'#f9f5fc',sub:'#d8c8e8'},
 };
 const DEFAULT_CKPTS={
@@ -501,6 +673,7 @@ let mode='hw',names={},editMode=false,pwBuf='',pwPurpose='edit',neTarget=null;
 let memoTarget=null,memoDate=null,memoSubtab='check';
 let ckSubject=null,ckItems=[];
 let sbSession=null; // 現在選択中のセッションid
+let whTypeId=null;  // 現在選択中の週宿題種類id
 
 /* ══ ストレージ ══ */
 const ls={
@@ -545,10 +718,13 @@ function onPwOk(){
 }
 
 /* ══ モード切替 ══ */
-function switchMode(m){if(m==='hw')doSwitch('hw');else requestModeSwitch(m);}
+function switchMode(m){
+  if(m==='hw'||m==='wh') doSwitch(m);
+  else requestModeSwitch(m);
+}
 function requestModeSwitch(target){
   if(mode===target)return;
-  if(mode==='hw') openPw('sw_'+target,`「${MODES[target].label}」へ移動`,'教員認証が必要です');
+  if(mode==='hw'||mode==='wh') openPw('sw_'+target,`「${MODES[target].label}」へ移動`,'教員認証が必要です');
   else doSwitch(target);
 }
 function doSwitch(m){
@@ -557,14 +733,16 @@ function doSwitch(m){
   r.setProperty('--mode-accent',cfg.accent);r.setProperty('--mode-bg',cfg.bg);
   r.setProperty('--mode-header',cfg.header);r.setProperty('--mode-sub',cfg.sub);
   document.body.style.background=cfg.bg;
-  ['hw','sh','mm','sb'].forEach(id=>{document.getElementById('tab-'+id).className='tab-btn'+(id===m?' active-'+id:'');});
+  ['hw','wh','sh','mm','sb'].forEach(id=>{document.getElementById('tab-'+id).className='tab-btn'+(id===m?' active-'+id:'');});
   document.getElementById('modeLabel').textContent=cfg.label;
   document.getElementById('btnCsv').style.background=cfg.accent;
   document.getElementById('btnCsv').style.borderColor=cfg.accent;
   document.getElementById('legend').classList.toggle('visible',m==='sh');
-  document.getElementById('hwLegend').style.display=m==='hw'?'flex':'none';
+  document.getElementById('hwLegend').style.display=(m==='hw'||m==='wh')?'flex':'none';
   document.getElementById('sbToolbar').style.display=m==='sb'?'block':'none';
+  document.getElementById('whToolbar').style.display=m==='wh'?'block':'none';
   if(m==='sb') renderSbToolbar();
+  if(m==='wh') renderWhToolbar();
   buildGrid();
 }
 
@@ -577,13 +755,15 @@ function buildGrid(){
     let sc=0,ac=0;
     for(let i=1;i<=TOTAL;i++){const s=day[i]||0;if(s===HW_SUB)sc++;if(s===HW_ABS)ac++;}
     info=`提出 <b style="color:#1d6638">${sc}</b> ／ 欠席 <b style="color:#888">${ac}</b> ／ 未提出 <b style="color:#c84b2f">${TOTAL-sc-ac}</b>`;
-    for(let i=1;i<=TOTAL;i++){
-      const btn=makeBtn(i);
+    const hwNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+    hwNums.forEach(i=>{
+      if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+      const btn=makeBtnOrEmpty(i);
       if(editMode)btn.classList.add('edit-ready');
       else{const s=day[i]||0;if(s===HW_SUB)btn.classList.add('hw-s');else if(s===HW_ABS)btn.classList.add('hw-a');}
       btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleHw(i);});
       grid.appendChild(btn);
-    }
+    });
   }
   else if(mode==='sh'){
     const data=ls.get(KEY_SH,{});
@@ -594,15 +774,17 @@ function buildGrid(){
     sorted.sort((a,b)=>{const ka=lastDate[a]||'0000',kb=lastDate[b]||'0000';return ka<kb?-1:ka>kb?1:0;});
     const priMap={};sorted.slice(0,PRIORITY_N).forEach((n,i)=>priMap[n]=i+1);
     info=`本日 <b style="color:#2e7d4f">${todayGiven.size}</b>枚 ／ 優先 <b style="color:#c84b2f">${Math.min(PRIORITY_N,sorted.length)}</b>人`;
-    for(let i=1;i<=TOTAL;i++){
-      const btn=makeBtn(i);const pri=priMap[i];
+    const shNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+    shNums.forEach(i=>{
+      if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+      const btn=makeBtnOrEmpty(i);const pri=priMap[i];
       if(editMode)btn.classList.add('edit-ready');
       else if(todayGiven.has(i)){btn.classList.add('sh-given');addSub(btn,lastDate[i]?fmtShort(lastDate[i]):'');}
       else if(pri>=1&&pri<=3){btn.classList.add('sh-p'+pri);const rb=el('span','sh-rank');rb.textContent='★'+pri;btn.appendChild(rb);addSub(btn,lastDate[i]?fmtShort(lastDate[i]):'未渡し');}
       else addSub(btn,lastDate[i]?fmtShort(lastDate[i]):'未渡し');
       btn.addEventListener('click',()=>{if(editMode)openNe(i);else toggleSh(i);});
       grid.appendChild(btn);
-    }
+    });
   }
   else if(mode==='mm'){
     const data=ls.get(KEY_MM,{});const todayD=data[today()]||{};
@@ -610,25 +792,78 @@ function buildGrid(){
     Object.entries(data).forEach(([dt,dd])=>{Object.entries(dd).forEach(([n,txt])=>{if(txt&&txt.trim()){const num=+n;if(!lastMemo[num]||dt>lastMemo[num])lastMemo[num]=dt;}});});
     let tc=0;for(let i=1;i<=TOTAL;i++)if(todayD[i]&&todayD[i].trim())tc++;
     info=`今日のメモ <b style="color:#1a3a6b">${tc}</b>件`;
-    for(let i=1;i<=TOTAL;i++){
-      const btn=makeBtn(i);
+    const mmNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+    mmNums.forEach(i=>{
+      if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+      const btn=makeBtnOrEmpty(i);
       const hasT=todayD[i]&&todayD[i].trim(),hasP=lastMemo[i];
       if(editMode)btn.classList.add('edit-ready');
       else if(hasT){btn.classList.add('mm-today');addSub(btn,fmtShort(today()));}
       else if(hasP){btn.classList.add('mm-past');addSub(btn,fmtShort(lastMemo[i]));}
       btn.addEventListener('click',()=>{if(editMode)openNe(i);else openMemo(i);});
       grid.appendChild(btn);
+    });
+  }
+  else if(mode==='wh'){
+    const whTypes=ls.get(KEY_WH_TYPES,[]);
+    const whData=ls.get(KEY_WH,{});
+    const t=today();
+    const dayData=whData[t]||{};
+    const hwDay=(ls.get(KEY_HW,{})[t])||{};
+    if(!whTypeId||!whTypes.find(x=>x.id===whTypeId)) whTypeId=whTypes[0]?.id||null;
+
+    if(!whTypeId){
+      info='週宿題の種類を上のタブの＋から追加してください';
+      const noNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+      noNums.forEach(i=>{if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}const btn=makeBtnOrEmpty(i);grid.appendChild(btn);});
+    } else {
+      const typeDay=dayData[whTypeId]||{};
+      let sc=0,ac=0;
+      // 各生徒の前回提出日
+      const lastSub={};
+      Object.entries(whData).forEach(([dt,dayObj])=>{
+        const td=dayObj[whTypeId]||{};
+        Object.entries(td).forEach(([n,s])=>{
+          if(s===HW_SUB){if(!lastSub[+n]||dt>lastSub[+n])lastSub[+n]=dt;}
+        });
+      });
+      for(let i=1;i<=TOTAL;i++){const s=typeDay[i]||0;if(s===HW_SUB)sc++;if(s===HW_ABS)ac++;}
+      info=`提出 <b style="color:#1d6638">${sc}</b> ／ 欠席 <b style="color:#888">${ac}</b> ／ 未 <b style="color:#c84b2f">${TOTAL-sc-ac}</b>`;
+      const whNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+      whNums.forEach(i=>{
+        if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+        const btn=makeBtnOrEmpty(i);
+        const s=typeDay[i]||0;
+        const isHwAbs=hwDay[i]===HW_ABS;
+        if(editMode){btn.classList.add('edit-ready');}
+        else if(s===HW_SUB){btn.classList.add('wh-s');}
+        else if(s===HW_ABS||isHwAbs){btn.classList.add('wh-a');}
+        else {
+          // 経過日数
+          const last=lastSub[i];
+          if(last){
+            const diff=Math.floor((new Date(t)-new Date(last))/(1000*86400));
+            if(diff>=7){btn.classList.add('wh-warn7');addSub(btn,`${diff}日経過！`);}
+            else if(diff>=5){btn.classList.add('wh-warn5');addSub(btn,`${diff}日経過`);}
+            else addSub(btn,fmtShort(last));
+          } else addSub(btn,'未提出');
+        }
+        btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleWh(i);});
+        grid.appendChild(btn);
+      });
     }
   }
   else if(mode==='sb'){
     const sess=getSbSession();
     if(!sess){
       info='提出物を上のタブから選択または追加してください';
-      for(let i=1;i<=TOTAL;i++){
-        const btn=makeBtn(i);
+      const sbNoNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+      sbNoNums.forEach(i=>{
+        if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+        const btn=makeBtnOrEmpty(i);
         btn.addEventListener('click',()=>{if(editMode)openNe(i);});
         grid.appendChild(btn);
-      }
+      });
     } else {
       const grades=sess.grades||{};
       // 今日の宿題欠席情報を取得
@@ -639,10 +874,11 @@ function buildGrid(){
         if(g==='B')bc++;else if(g==='Bp')bpc++;else if(g==='A')ac++;else if(g==='C')cc++;else if(g==='none')nc++;else if(g==='abs')absc++;
       }
       info=`<b style="color:#1d6638">B:${bc}</b> <b style="color:#1a5fa0">B+:${bpc}</b> <b style="color:#7b3fa0">A:${ac}</b> <b style="color:#bf5000">C:${cc}</b> 未:${nc} 欠:${absc}`;
-      for(let i=1;i<=TOTAL;i++){
-        const btn=makeBtn(i);
+      const sbYesNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
+      sbYesNums.forEach(i=>{
+        if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+        const btn=makeBtnOrEmpty(i);
         const g=grades[i]||'';
-        // 宿題で欠席なら自動でabs初期化（まだ未チェックの場合のみ）
         const isHwAbs=(hwDay[i]===HW_ABS);
         if(editMode){
           btn.classList.add('edit-ready');
@@ -655,7 +891,7 @@ function buildGrid(){
         else if(isHwAbs){btn.classList.add('sb-abs');addSub(btn,'欠席(自動)');}
         btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleSb(i);});
         grid.appendChild(btn);
-      }
+      });
     }
   }
   document.getElementById('statusBar').innerHTML=info;
@@ -664,6 +900,7 @@ function buildGrid(){
   bn.textContent=editMode?'編集終了':'名前編集';
   bn.style.background=editMode?'var(--ink)':'var(--green)';
   bn.style.borderColor=editMode?'var(--ink)':'var(--green)';
+  document.getElementById('btnSeat').style.display=editMode?'':'none';
 }
 
 function makeBtn(i){
@@ -672,8 +909,38 @@ function makeBtn(i){
   if(names[i]){const nm=el('span','btn-name');nm.textContent=names[i];btn.appendChild(nm);}
   return btn;
 }
+function makeBtnOrEmpty(i){
+  // i===null → 空席マス
+  if(i===null){
+    const btn=el('button','num-btn seat-empty');
+    const ns=el('span','btn-num');ns.textContent='─';btn.appendChild(ns);
+    return btn;
+  }
+  return makeBtn(i);
+}
 function addSub(btn,text){const s=el('span','btn-sub');s.textContent=text;btn.appendChild(s);}
 function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+
+// 席替えレイアウトから{cols, nums:[num|null,...]}を返す
+function getLayoutInfo(){
+  const saved=ls.get(KEY_LAYOUT,null);
+  if(!saved||!saved.seats||!saved.seats.length) return null;
+  const cols=saved.cols||5;
+  const nums=saved.seats.map(s=>s.empty?null:(s.num||null));
+  return {cols,nums};
+}
+
+// グリッドに席替えレイアウトを適用
+function applyLayoutToGrid(grid, buildCardFn){
+  const layout=getLayoutInfo();
+  if(!layout){
+    // 未設定: 従来通り5列
+    document.getElementById('numGrid').style.gridTemplateColumns='repeat(5,1fr)';
+    return null; // 通常ループに任せる
+  }
+  grid.style.gridTemplateColumns=`repeat(${layout.cols},1fr)`;
+  return layout.nums; // 呼び元でこれをループ
+}
 
 /* ══ 宿題 ══ */
 function cycleHw(n){
@@ -683,6 +950,68 @@ function cycleHw(n){
   if(next===0)delete data[t][n];else data[t][n]=next;
   if(!Object.keys(data[t]).length)delete data[t];
   ls.set(KEY_HW,data);buildGrid();
+}
+
+/* ══ 週宿題 ══ */
+function cycleWh(n){
+  if(!whTypeId)return;
+  const data=ls.get(KEY_WH,{}),t=today();
+  if(!data[t])data[t]={};
+  if(!data[t][whTypeId])data[t][whTypeId]={};
+  const cur=data[t][whTypeId][n]||0;const next=(cur+1)%3;
+  if(next===0)delete data[t][whTypeId][n];else data[t][whTypeId][n]=next;
+  if(!Object.keys(data[t][whTypeId]).length)delete data[t][whTypeId];
+  if(!Object.keys(data[t]).length)delete data[t];
+  ls.set(KEY_WH,data);buildGrid();
+}
+
+function renderWhToolbar(){
+  const types=ls.get(KEY_WH_TYPES,[]);
+  const row=document.getElementById('whTabRow');row.innerHTML='';
+  types.forEach(type=>{
+    const tab=el('button','wh-type-tab');
+    if(type.id===whTypeId)tab.classList.add('act');
+    tab.textContent=type.name;
+    tab.addEventListener('click',()=>{whTypeId=type.id;renderWhToolbar();buildGrid();});
+    row.appendChild(tab);
+  });
+  const addBtn=el('button','wh-add-tab');addBtn.textContent='+';
+  addBtn.addEventListener('click',openWhAdd);
+  row.appendChild(addBtn);
+}
+
+function openWhAdd(){
+  const types=ls.get(KEY_WH_TYPES,[]);
+  const list=document.getElementById('whTypeList');list.innerHTML='';
+  types.forEach(type=>{
+    const tag=el('div','wh-type-del-tag');
+    tag.appendChild(document.createTextNode(type.name));
+    const d=el('span','wh-type-del-btn');d.textContent='×';
+    d.addEventListener('click',()=>{
+      if(!confirm(`「${type.name}」を削除しますか？データも消えます`))return;
+      const ts=ls.get(KEY_WH_TYPES,[]).filter(x=>x.id!==type.id);
+      ls.set(KEY_WH_TYPES,ts);
+      if(whTypeId===type.id)whTypeId=ts[0]?.id||null;
+      openWhAdd();renderWhToolbar();buildGrid();
+    });
+    tag.appendChild(d);list.appendChild(tag);
+  });
+  document.getElementById('whNewType').value='';
+  document.getElementById('whAddOverlay').classList.add('open');
+}
+function closeWhAdd(){document.getElementById('whAddOverlay').classList.remove('open');}
+function addWhType(){
+  const name=document.getElementById('whNewType').value.trim();
+  if(!name)return;
+  const types=ls.get(KEY_WH_TYPES,[]);
+  if(types.find(x=>x.name===name)){showToast('同じ名前があります');return;}
+  const id='wt'+Date.now();
+  types.push({id,name});
+  ls.set(KEY_WH_TYPES,types);
+  whTypeId=id;
+  document.getElementById('whNewType').value='';
+  openWhAdd();renderWhToolbar();buildGrid();
+  showToast(`「${name}」を追加しました`);
 }
 
 /* ══ 賞状 ══ */
@@ -1005,6 +1334,7 @@ function saveMemo(){
 function saveAndExportToday(){
   const t=today();
   const hw=ls.get(KEY_HW,{});if(!hw[t])hw[t]={};ls.set(KEY_HW,hw);
+  const wh=ls.get(KEY_WH,{});if(!wh[t])wh[t]={};ls.set(KEY_WH,wh);
   const sh=ls.get(KEY_SH,{});if(!sh[t])sh[t]={given:[]};ls.set(KEY_SH,sh);
   const mm=ls.get(KEY_MM,{});if(!mm[t])mm[t]={};ls.set(KEY_MM,mm);
   const sb=ls.get(KEY_SB,{});if(!sb[t])sb[t]={sessions:[]};ls.set(KEY_SB,sb);
@@ -1016,12 +1346,14 @@ function exportJSON(){
     version:1,
     exported: new Date().toISOString(),
     data:{
-      [KEY_NAMES]: ls.get(KEY_NAMES,{}),
-      [KEY_HW]:    ls.get(KEY_HW,{}),
-      [KEY_SH]:    ls.get(KEY_SH,{}),
-      [KEY_MM]:    ls.get(KEY_MM,{}),
-      [KEY_SB]:    ls.get(KEY_SB,{}),
-      [KEY_CKPTS]: ls.get(KEY_CKPTS,DEFAULT_CKPTS),
+      [KEY_NAMES]:    ls.get(KEY_NAMES,{}),
+      [KEY_HW]:       ls.get(KEY_HW,{}),
+      [KEY_WH]:       ls.get(KEY_WH,{}),
+      [KEY_WH_TYPES]: ls.get(KEY_WH_TYPES,[]),
+      [KEY_SH]:       ls.get(KEY_SH,{}),
+      [KEY_MM]:       ls.get(KEY_MM,{}),
+      [KEY_SB]:       ls.get(KEY_SB,{}),
+      [KEY_CKPTS]:    ls.get(KEY_CKPTS,DEFAULT_CKPTS),
     }
   };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -1053,16 +1385,17 @@ function handleImport(event){
     const imp=payload.data;
     // 重複確認：日付ごとのレコード数を集計
     const keysHW =Object.keys(imp[KEY_HW]||{});
+    const keysWH =Object.keys(imp[KEY_WH]||{});
     const keysSH =Object.keys(imp[KEY_SH]||{});
     const keysMM =Object.keys(imp[KEY_MM]||{});
     const keysSB =Object.keys(imp[KEY_SB]||{});
-    const allDates=[...new Set([...keysHW,...keysSH,...keysMM,...keysSB])].sort();
+    const allDates=[...new Set([...keysHW,...keysWH,...keysSH,...keysMM,...keysSB])].sort();
 
-    const curHW=ls.get(KEY_HW,{}), curSH=ls.get(KEY_SH,{}),
-          curMM=ls.get(KEY_MM,{}), curSB=ls.get(KEY_SB,{});
+    const curHW=ls.get(KEY_HW,{}), curWH=ls.get(KEY_WH,{}),
+          curSH=ls.get(KEY_SH,{}), curMM=ls.get(KEY_MM,{}), curSB=ls.get(KEY_SB,{});
 
     const overlap=allDates.filter(d=>
-      curHW[d]||curSH[d]||curMM[d]||curSB[d]
+      curHW[d]||curWH[d]||curSH[d]||curMM[d]||curSB[d]
     );
 
     let msg=`インポート内容:
@@ -1086,12 +1419,13 @@ function handleImport(event){
     const mergeObj=(cur,imp)=>Object.assign({},cur,imp);
 
     ls.set(KEY_HW, mergeObj(curHW, imp[KEY_HW]||{}));
+    ls.set(KEY_WH, mergeObj(curWH, imp[KEY_WH]||{}));
     ls.set(KEY_SH, mergeObj(curSH, imp[KEY_SH]||{}));
     ls.set(KEY_MM, mergeObj(curMM, imp[KEY_MM]||{}));
     ls.set(KEY_SB, mergeObj(curSB, imp[KEY_SB]||{}));
-    // 名前・観点はインポート側を優先（上書き）
-    if(imp[KEY_NAMES]) ls.set(KEY_NAMES, imp[KEY_NAMES]);
-    if(imp[KEY_CKPTS]) ls.set(KEY_CKPTS, imp[KEY_CKPTS]);
+    if(imp[KEY_NAMES])    ls.set(KEY_NAMES, imp[KEY_NAMES]);
+    if(imp[KEY_CKPTS])    ls.set(KEY_CKPTS, imp[KEY_CKPTS]);
+    if(imp[KEY_WH_TYPES]) ls.set(KEY_WH_TYPES, imp[KEY_WH_TYPES]);
     names=ls.get(KEY_NAMES,{});
 
     showToast(`インポート完了 — ${allDates.length}件の日付データを取り込みました`);
@@ -1104,39 +1438,41 @@ function handleImport(event){
 }
 
 function exportAllCSV(){
-  const hw=ls.get(KEY_HW,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
-  const keys=[...new Set([...Object.keys(hw),...Object.keys(sh),...Object.keys(mm),...Object.keys(sb)])].sort();
+  const hw=ls.get(KEY_HW,{}),wh=ls.get(KEY_WH,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
+  const keys=[...new Set([...Object.keys(hw),...Object.keys(wh),...Object.keys(sh),...Object.keys(mm),...Object.keys(sb)])].sort();
   if(!keys.length){showToast('記録がありません');return;}
   downloadCSV(keys);showToast('全履歴をCSV出力しました');
 }
 function downloadCSV(keys){
-  const hw=ls.get(KEY_HW,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
-  // 列: 番号, 日付×(宿題, 賞状, メモ, 提出物セッション名...)
+  const hw=ls.get(KEY_HW,{}),wh=ls.get(KEY_WH,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
+  const whTypes=ls.get(KEY_WH_TYPES,[]);
+  // 列順: 番号, 日付×(毎日宿題, 週宿題×種類, 賞状, メモ, 提出物×セッション)
   const cols=[];
   keys.forEach(k=>{
     const d=fmtShort(k);
     cols.push({k,kind:'hw',label:d+'宿題'});
+    whTypes.forEach(type=>{cols.push({k,kind:'wh',label:d+'週'+type.name,typeId:type.id});});
     cols.push({k,kind:'sh',label:d+'賞状'});
     cols.push({k,kind:'mm',label:d+'メモ'});
     const sessions=(sb[k]?.sessions)||[];
     sessions.forEach(sess=>{cols.push({k,kind:'sb',label:d+(sess.kan?`[${sess.kan}]`:'')+sess.name,sess});});
   });
-  let csv='\uFEFF番号,'+cols.map(c=>cc(c.label)).join(',')+'\n';
+  let csv='\uFEFF番号,'+cols.map(x=>cc(x.label)).join(',')+"\n";
   for(let i=1;i<=TOTAL;i++){
     const row=[String(i)];
-    cols.forEach(({k,kind,sess})=>{
+    cols.forEach(({k,kind,sess,typeId})=>{
       if(kind==='hw'){const s=(hw[k]||{})[i]||0;row.push(s===HW_SUB?'○':s===HW_ABS?'欠':'');}
+      else if(kind==='wh'){const s=((wh[k]||{})[typeId]||{})[i]||0;row.push(s===HW_SUB?'○':s===HW_ABS?'欠':'');}
       else if(kind==='sh'){row.push((sh[k]?.given||[]).includes(i)?'○':'');}
       else if(kind==='mm'){const t=(mm[k]?.[i]||'').trim().replace(/\n/g,' / ');row.push(cc(t));}
       else if(kind==='sb'){
         const g=sess.grades?.[i]||'';
-        // 欠席自動判定も反映
         const hwDay=(hw[k]||{});
         const eff=g||(hwDay[i]===HW_ABS?'abs':'');
         row.push(eff?SB_LABEL[eff]||eff:'');
       }
     });
-    csv+=row.join(',')+'\n';
+    csv+=row.join(',')+"\n";
   }
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
@@ -1149,8 +1485,9 @@ function cc(s){if(!s)return'';return(s.includes(',')||s.includes('"')||s.include
 /* ══ 履歴 ══ */
 function requestHistory(){if(mode==='hw')openPw('history','履歴・CSV閲覧','教員認証が必要です');else openHistory();}
 function openHistory(){
-  const hw=ls.get(KEY_HW,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
-  const keys=[...new Set([...Object.keys(hw),...Object.keys(sh),...Object.keys(mm),...Object.keys(sb)])].sort().reverse();
+  const hw=ls.get(KEY_HW,{}),wh=ls.get(KEY_WH,{}),sh=ls.get(KEY_SH,{}),mm=ls.get(KEY_MM,{}),sb=ls.get(KEY_SB,{});
+  const whTypes=ls.get(KEY_WH_TYPES,[]);
+  const keys=[...new Set([...Object.keys(hw),...Object.keys(wh),...Object.keys(sh),...Object.keys(mm),...Object.keys(sb)])].sort().reverse();
   const list=document.getElementById('histList');
   if(!keys.length){list.innerHTML='<div class="hist-empty">まだ記録がありません</div>';}
   else{
@@ -1190,6 +1527,178 @@ function openHistory(){
 }
 function closeHistory(){document.getElementById('histModal').classList.remove('open');}
 
+/* ══ 席替えエディタ ══ */
+const KEY_LAYOUT='cc_seat_layout_v1';
+const SB_SUBJECTS_SEAT=['国語','算数','理科','社会','体育','その他']; // 既存と区別のため別名
+let seatRows=5,seatCols=6,seatData=[],seatDragSrc=null,seatTouchIdx=null,seatTouchClone=null;
+
+function openSeatEditor(){
+  ls.set(KEY_NAMES,names);
+  const saved=ls.get(KEY_LAYOUT,null);
+  if(saved){
+    seatRows=saved.rows||5;seatCols=saved.cols||6;seatData=saved.seats||[];
+    document.getElementById('seatRows').value=seatRows;
+    document.getElementById('seatCols').value=seatCols;
+    const need=seatRows*seatCols;
+    while(seatData.length<need)seatData.push({num:null,empty:false});
+    if(seatData.length>need)seatData=seatData.slice(0,need);
+  } else {
+    seatRows=5;seatCols=6;
+    document.getElementById('seatRows').value=seatRows;
+    document.getElementById('seatCols').value=seatCols;
+    initSeatData();
+    const nums=Object.keys(names).map(Number).sort((a,b)=>a-b);
+    nums.forEach((n,i)=>{if(i<seatData.length)seatData[i].num=n;});
+  }
+  renderSeatGrid();
+  document.getElementById('seatOverlay').classList.add('open');
+}
+
+function closeSeatEditor(){document.getElementById('seatOverlay').classList.remove('open');}
+function saveSeatAndClose(){saveSeatLayout();closeSeatEditor();showToast('席替えを保存しました');}
+function saveSeatLayout(){ls.set(KEY_LAYOUT,{rows:seatRows,cols:seatCols,seats:seatData});}
+
+function initSeatData(){
+  seatData=[];
+  for(let i=0;i<seatRows*seatCols;i++)seatData.push({num:null,empty:false});
+}
+
+function applySeatGrid(){
+  const r=parseInt(document.getElementById('seatRows').value)||5;
+  const c2=parseInt(document.getElementById('seatCols').value)||6;
+  if(r<1||r>12||c2<1||c2>12){showToast('行・列は1〜12で指定');return;}
+  const old=[...seatData];seatRows=r;seatCols=c2;seatData=[];
+  for(let i=0;i<r*c2;i++)seatData.push(i<old.length?old[i]:{num:null,empty:false});
+  renderSeatGrid();showToast(`${r}行×${c2}列に変更しました`);
+}
+
+function renderSeatGrid(){
+  const grid=document.getElementById('seatGridInner');
+  grid.style.gridTemplateColumns=`repeat(${seatCols},68px)`;
+  grid.innerHTML='';
+  seatData.forEach((s,idx)=>{
+    const d=el('div','seat-card'+(s.empty?' s-empty':''));
+    d.dataset.idx=idx;
+    const row=Math.floor(idx/seatCols)+1,col=(idx%seatCols)+1;
+    if(s.empty){
+      const nm=el('span','sc-name');nm.textContent='空席';d.appendChild(nm);
+    } else {
+      const ns=el('div','sc-num');ns.textContent=s.num!=null?`${s.num}番`:'─';d.appendChild(ns);
+      const nm=el('div','sc-name');nm.textContent=s.num!=null?(names[s.num]||'(未登録)'):'';d.appendChild(nm);
+    }
+    const ps=el('span','sc-pos');ps.textContent=`${row}-${col}`;d.appendChild(ps);
+    if(!s.empty){
+      d.draggable=true;
+      d.addEventListener('dragstart',e=>{seatDragSrc=+e.currentTarget.dataset.idx;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+      d.addEventListener('dragend',e=>{e.currentTarget.classList.remove('dragging');document.querySelectorAll('.seat-card.drag-over').forEach(x=>x.classList.remove('drag-over'));});
+    }
+    d.addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('drag-over');});
+    d.addEventListener('dragleave',e=>{e.currentTarget.classList.remove('drag-over');});
+    d.addEventListener('drop',e=>{
+      e.preventDefault();
+      const dst=+e.currentTarget.dataset.idx;
+      e.currentTarget.classList.remove('drag-over');
+      if(seatDragSrc===null||seatDragSrc===dst)return;
+      const tmp=seatData[seatDragSrc];seatData[seatDragSrc]=seatData[dst];seatData[dst]=tmp;
+      seatDragSrc=null;renderSeatGrid();
+    });
+    // タッチ
+    d.addEventListener('touchstart',e=>{
+      if(d.classList.contains('s-empty'))return;
+      seatTouchIdx=+d.dataset.idx;
+      const rect=d.getBoundingClientRect();
+      seatTouchClone=d.cloneNode(true);
+      Object.assign(seatTouchClone.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',opacity:'.7',zIndex:'999',pointerEvents:'none'});
+      document.body.appendChild(seatTouchClone);d.style.opacity='.3';
+    },{passive:true});
+    d.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      const t=e.touches[0];
+      if(seatTouchClone){seatTouchClone.style.left=(t.clientX-34)+'px';seatTouchClone.style.top=(t.clientY-30)+'px';}
+      document.querySelectorAll('.seat-card.drag-over').forEach(x=>x.classList.remove('drag-over'));
+      const over=document.elementFromPoint(t.clientX,t.clientY)?.closest('.seat-card');
+      if(over&&+over.dataset.idx!==seatTouchIdx)over.classList.add('drag-over');
+    },{passive:false});
+    d.addEventListener('touchend',e=>{
+      if(seatTouchClone){seatTouchClone.remove();seatTouchClone=null;}
+      document.querySelectorAll('.seat-card').forEach(x=>{x.style.opacity='';x.classList.remove('drag-over');});
+      if(seatTouchIdx===null)return;
+      const t=e.changedTouches[0];
+      const over=document.elementFromPoint(t.clientX,t.clientY)?.closest('.seat-card');
+      if(over){const dst=+over.dataset.idx;if(dst!==seatTouchIdx){const tmp=seatData[seatTouchIdx];seatData[seatTouchIdx]=seatData[dst];seatData[dst]=tmp;}}
+      seatTouchIdx=null;renderSeatGrid();
+    });
+    grid.appendChild(d);
+  });
+}
+
+function seatRandomize(){
+  if(!confirm('現在の座席をランダムに並び替えますか？'))return;
+  const nums=seatData.filter(s=>!s.empty).map(s=>s.num);
+  for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}
+  let ni=0;seatData.forEach(s=>{if(!s.empty)s.num=nums[ni++];});
+  renderSeatGrid();showToast('ランダムに並び替えました');
+}
+
+function seatToggleEmpty(){
+  const idxStr=prompt('空席にする位置番号（1〜）をカンマ区切りで入力 例: 30');
+  if(!idxStr)return;
+  idxStr.split(',').map(s=>parseInt(s.trim())-1).filter(i=>i>=0&&i<seatData.length).forEach(i=>{
+    seatData[i].empty=!seatData[i].empty;if(seatData[i].empty)seatData[i].num=null;
+  });
+  renderSeatGrid();showToast('空席を切り替えました');
+}
+
+/* CSV */
+function openSeatCsv(){document.getElementById('seatCsvOv').classList.add('open');}
+function closeSeatCsv(){document.getElementById('seatCsvOv').classList.remove('open');}
+function loadSeatCsvFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();r.onload=ev=>{document.getElementById('seatCsvText').value=ev.target.result;};r.readAsText(file,'UTF-8');
+}
+function applySeatCsv(){
+  const text=document.getElementById('seatCsvText').value.trim();
+  if(!text){closeSeatCsv();return;}
+  let ok=0,err=0;
+  const parsed=[];
+  text.split('\n').filter(l=>l.trim()).forEach(line=>{
+    const parts=line.replace(/^\uFEFF/,'').trim().split(/[,\t]/);
+    const num=parseInt(parts[0]);const name=(parts[1]||'').trim();
+    if(!isNaN(num)&&num>0&&name){parsed.push({num,name});ok++;}else if(line.trim())err++;
+  });
+  parsed.forEach(({num,name})=>{names[num]=name;});
+  ls.set(KEY_NAMES,names);
+  const placed=new Set(seatData.filter(s=>!s.empty&&s.num!=null).map(s=>s.num));
+  const unplaced=parsed.map(p=>p.num).filter(n=>!placed.has(n));
+  let ui=0;seatData.forEach(s=>{if(!s.empty&&s.num===null&&ui<unplaced.length)s.num=unplaced[ui++];});
+  closeSeatCsv();renderSeatGrid();showToast(`${ok}件登録（${err}件スキップ）`);
+}
+
+/* 番号割当 */
+function openSeatAssign(){
+  const list=document.getElementById('seatAssignList');list.innerHTML='';
+  const allNums=[...new Set([...Object.keys(names).map(Number),...Array.from({length:30},(_,i)=>i+1)])].sort((a,b)=>a-b);
+  seatData.forEach((s,idx)=>{
+    if(s.empty)return;
+    const row=Math.floor(idx/seatCols)+1,col=(idx%seatCols)+1;
+    const item=el('div','assign-item2');
+    const pos=el('span','assign-pos2');pos.textContent=`${row}-${col}`;
+    const sel=el('select','assign-sel2');sel.dataset.idx=idx;
+    const blank=document.createElement('option');blank.value='';blank.textContent='─ 空き ─';sel.appendChild(blank);
+    allNums.forEach(n=>{const op=document.createElement('option');op.value=n;op.textContent=`${n}番 ${names[n]||''}`;if(s.num===n)op.selected=true;sel.appendChild(op);});
+    item.appendChild(pos);item.appendChild(sel);list.appendChild(item);
+  });
+  document.getElementById('seatAssignOv').classList.add('open');
+}
+function closeSeatAssign(){document.getElementById('seatAssignOv').classList.remove('open');}
+function applyAssign2(){
+  document.querySelectorAll('.assign-sel2').forEach(sel=>{
+    const idx=+sel.dataset.idx;const val=sel.value;
+    seatData[idx].num=val?+val:null;
+  });
+  closeSeatAssign();renderSeatGrid();showToast('番号割当を更新しました');
+}
+
 /* ══ 名前編集 ══ */
 function requestEditMode(){if(editMode){editMode=false;buildGrid();showToast('名前編集モードを終了しました');return;}openPw('edit','名前編集','教員認証が必要です');}
 function openNe(n){
@@ -1213,14 +1722,17 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 /* モーダル外タップ */
-[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval]].forEach(([id,fn])=>{
+[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd]].forEach(([id,fn])=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fn();});
 });
 document.getElementById('neInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNeName();});
 document.getElementById('sbNewName').addEventListener('keydown',e=>{if(e.key==='Enter')addSbSession();});
+document.getElementById('whNewType').addEventListener('keydown',e=>{if(e.key==='Enter')addWhType();});
 
 /* ══ 初期化 ══ */
 names=ls.get(KEY_NAMES,{});
+const _whT=ls.get(KEY_WH_TYPES,[]);
+if(_whT.length)whTypeId=_whT[0].id;
 initDate();
 doSwitch('hw');
 </script>

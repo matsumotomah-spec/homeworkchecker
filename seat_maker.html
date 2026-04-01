@@ -842,124 +842,177 @@ function calcScore(stu,si,layout){
 }
 
 function genLayout(){
-  const stus=S.students.filter(s=>s.name);
-  const total=S.cols*S.rows;
-  const valid=[];
-  for(let i=0;i<total;i++)if(!S.emptySeats.includes(i))valid.push(i);
-  if(stus.length>valid.length){showToast(`生徒数(${stus.length})が有効席数(${valid.length})を超えています`,'error');return null;}
+  const stus = S.students.filter(s => s.name);
+  const total = S.cols * S.rows;
 
-  const layout=new Array(total).fill(0);
-  S.emptySeats.forEach(i=>layout[i]=-1);
+  // 有効席: 空席指定を除いた全席
+  const validSet = new Set();
+  for(let i = 0; i < total; i++){
+    if(!S.emptySeats.includes(i)) validSet.add(i);
+  }
+  const valid = [...validSet];
 
-  // 未配置の席インデックスセット
-  const remSeats=new Set(valid);
-  // 未配置の生徒セット（num -> stu）
-  const remStus=new Map(stus.map(s=>[s.num,s]));
-
-  // スコアが最も低い席を返す（pool=候補席の配列）
-  // poolが空または全員配置済みの場合はremSeatsから選ぶ（フォールバック保証）
-  function best(stu, pool){
-    const candidates = pool.filter(si=>remSeats.has(si));
-    const searchIn = candidates.length>0 ? candidates : [...remSeats];
-    let b=null,bs=Infinity;
-    searchIn.forEach(si=>{
-      const sc=calcScore(stu,si,layout);
-      if(sc<bs||(sc===bs&&Math.random()<.4)){bs=sc;b=si;}
-    });
-    return b;
+  if(stus.length > valid.length){
+    showToast(`生徒数(${stus.length})が有効席数(${valid.length})を超えています`, 'error');
+    return null;
   }
 
-  // 配置実行（既に配置済みの生徒はスキップ）
-  function assign(stu, pool){
-    if(!remStus.has(stu.num))return; // 既に配置済み
-    const seat=best(stu, pool);
-    if(seat===null)return;
-    layout[seat]=stu.num;
+  // layout: 空席=-1、未配置=0、配置済み=出席番号
+  const layout = new Array(total).fill(0);
+  S.emptySeats.forEach(i => { layout[i] = -1; });
+
+  // 残り席（Setで管理 → 重複なし・O(1)削除）
+  const remSeats = new Set(valid);
+  // 残り生徒（Mapで管理 → O(1)検索・削除）
+  const remStus  = new Map(stus.map(s => [s.num, s]));
+
+  // 最良席を選ぶ（remSeatsの中からスコア最小）
+  // preferPool: 優先したい席の候補（remSeatsのサブセット）
+  function pickBest(stu, preferPool){
+    // preferPool に残っている席があればそこから、なければ remSeats 全体から
+    const pool = preferPool.filter(si => remSeats.has(si));
+    const search = pool.length > 0 ? pool : [...remSeats];
+    if(search.length === 0) return null;
+    let best = null, bestSc = Infinity;
+    for(const si of search){
+      const sc = calcScore(stu, si, layout);
+      if(sc < bestSc || (sc === bestSc && Math.random() < 0.4)){
+        bestSc = sc; best = si;
+      }
+    }
+    return best;
+  }
+
+  // 生徒を席に配置する（既配置なら何もしない）
+  function assign(stu, preferPool){
+    if(!remStus.has(stu.num)) return; // 既に配置済み
+    const seat = pickBest(stu, preferPool);
+    if(seat === null) return; // 空席なし（後の強制配置で対応）
+    layout[seat] = stu.num;
     remSeats.delete(seat);
     remStus.delete(stu.num);
   }
 
-  // --- 優先順位順に配置 ---
+  // ── 優先順位順に配置 ──────────────────────────
   // 1. 視力①（前1列のみ）
-  stus.filter(s=>s.vision===1).forEach(s=>
-    assign(s, valid.filter(si=>seatR(si)===0))
-  );
+  stus.filter(s => s.vision === 1)
+      .forEach(s => assign(s, valid.filter(si => seatR(si) === 0)));
+
   // 2. 視力②（前2列 or 中央3列目まで）
-  stus.filter(s=>s.vision===2).forEach(s=>
-    assign(s, valid.filter(si=>seatR(si)<=1||(isMiddleCol(si)&&seatR(si)<=2)))
-  );
-  // 3. 前列固定（視力配慮と重複する場合は既に配置済みなのでスキップされる）
-  stus.filter(s=>s.posFront).forEach(s=>
-    assign(s, valid.filter(si=>seatR(si)===0))
-  );
-  // 4. リーダー分散（4ブロック均等）
-  const bCnt={0:0,1:0,2:0,3:0};
-  stus.filter(s=>s.isLeader).forEach(s=>{
-    const mb=+Object.entries(bCnt).sort((a,b)=>a[1]-b[1])[0][0];
-    assign(s, valid.filter(si=>{
-      const b=Math.floor(seatR(si)/(Math.ceil(S.rows/2)))*2+Math.floor(seatC(si)/(Math.ceil(S.cols/2)));
-      return b===mb;
+  stus.filter(s => s.vision === 2)
+      .forEach(s => assign(s, valid.filter(si => seatR(si) <= 1 || (isMiddleCol(si) && seatR(si) <= 2))));
+
+  // 3. 前列固定
+  stus.filter(s => s.posFront)
+      .forEach(s => assign(s, valid.filter(si => seatR(si) === 0)));
+
+  // 4. リーダー（4ブロック均等分散）
+  const bCnt = {0:0, 1:0, 2:0, 3:0};
+  stus.filter(s => s.isLeader).forEach(s => {
+    const mb = +Object.entries(bCnt).sort((a,b) => a[1]-b[1])[0][0];
+    assign(s, valid.filter(si => {
+      const b = Math.floor(seatR(si)/(Math.ceil(S.rows/2)))*2
+               + Math.floor(seatC(si)/(Math.ceil(S.cols/2)));
+      return b === mb;
     }));
-    // 配置後にブロックカウント更新
-    for(let si2=0;si2<total;si2++){
-      if(layout[si2]===s.num){
-        const b=Math.floor(seatR(si2)/(Math.ceil(S.rows/2)))*2+Math.floor(seatC(si2)/(Math.ceil(S.cols/2)));
-        bCnt[b]++;break;
+    // 配置された席のブロックをカウント
+    for(let si2 = 0; si2 < total; si2++){
+      if(layout[si2] === s.num){
+        const b = Math.floor(seatR(si2)/(Math.ceil(S.rows/2)))*2
+                + Math.floor(seatC(si2)/(Math.ceil(S.cols/2)));
+        bCnt[b]++; break;
       }
     }
   });
-  // 5. グループ別（A→B→C順。複数グループ所属も重複なく配置される）
-  ['A','B','C'].forEach(g=>{
-    stus.filter(s=>(s.groups||[]).includes(g)).forEach(s=>assign(s,[...remSeats]));
-  });
-  // 6. 残り全員（remStusに残っている全生徒を配置）
-  // シャッフルして偏りをなくす
-  const remaining=[...remStus.values()].sort(()=>Math.random()-.5);
-  remaining.forEach(s=>assign(s,[...remSeats]));
 
-  // --- 配置漏れチェック ---
-  const unplaced=[...remStus.values()];
-  if(unplaced.length>0){
-    // 強制配置：残っている席に無条件で配置
-    const forcedNames=[];
-    unplaced.forEach(stu=>{
-      if(remSeats.size===0)return;
-      const seat=[...remSeats][0];
-      layout[seat]=stu.num;
+  // 5. グループ別（A→B→C。複数グループ所属は両方の制約を受ける）
+  // assign内でremSeatsを直接参照するので空配列でよい
+  ['A','B','C'].forEach(g => {
+    stus.filter(s => (s.groups||[]).includes(g))
+        .forEach(s => assign(s, []));
+  });
+
+  // 6. 残り全員を配置（remStusに残っている生徒 = まだ未配置の全生徒）
+  // assign内でpickBestが常にremSeatsを参照するので、空の配列を渡せばよい
+  // （pickBest内: pool.filter(si=>remSeats.has(si)) が空→remSeats全体を使う）
+  [...remStus.values()]
+    .sort(() => Math.random() - 0.5)
+    .forEach(s => assign(s, []));  // 空配列=制約なし→remSeats全体から最良を選ぶ
+
+  // ── 配置漏れ強制配置 ─────────────────────────
+  // ここに到達した生徒は「remSeats が空だったため assign できなかった」ケース
+  // （生徒数 ≤ 有効席数 を確認済みなので通常は発生しないが念のため）
+  const unplaced = [...remStus.values()];
+  if(unplaced.length > 0){
+    const forcedNames = [];
+    unplaced.forEach(stu => {
+      if(remSeats.size === 0) return;
+      const seat = [...remSeats][0];
+      layout[seat] = stu.num;
       remSeats.delete(seat);
+      remStus.delete(stu.num);
       forcedNames.push(stu.name);
     });
-    if(forcedNames.length>0){
-      // アラートは後で表示（returnする前に）
-      setTimeout(()=>{
-        alert(`⚠️ 配慮事項の制約が強すぎて理想的な配置ができなかった生徒がいます。\n\n該当生徒：${forcedNames.join('、')}\n\n配置はされていますが、配慮が完全には満たされていない可能性があります。\n先生プレビューのドラッグ機能で手動調整してください。`);
-      },200);
+    if(forcedNames.length > 0){
+      setTimeout(() => {
+        alert(
+          `⚠️ 配慮事項の制約が強すぎて一部の生徒を理想的な席に配置できませんでした。\n\n` +
+          `該当生徒：${forcedNames.join('、')}\n\n` +
+          `配置自体はされています。先生プレビューのドラッグ機能で手動調整してください。`
+        );
+      }, 300);
     }
   }
 
-  // 後処理: 市松・隣接改善
-  if(S.genderMode!=='random'){
-    for(let iter=0;iter<80;iter++){
-      let improved=false;
-      for(let i=0;i<valid.length;i++){
-        for(let j=i+1;j<valid.length;j++){
-          const si=valid[i],sj=valid[j];
-          const ni=layout[si],nj=layout[sj];
-          if(ni<=0||nj<=0)continue;
-          const si2=S.students.find(s=>s.num===ni),sj2=S.students.find(s=>s.num===nj);
-          if(!si2||!sj2)continue;
-          // 特殊配慮のある生徒は交換しない
-          if(si2.vision||sj2.vision||si2.posFront||sj2.posFront||si2.posBack||sj2.posBack||si2.posWin||sj2.posWin||si2.posHall||sj2.posHall||(si2.groups||[]).length||(sj2.groups||[]).length)continue;
-          const before=calcScore(si2,si,layout)+calcScore(sj2,sj,layout);
-          layout[si]=nj;layout[sj]=ni;
-          const after=calcScore(sj2,si,layout)+calcScore(si2,sj,layout);
-          if(after<before)improved=true;
-          else{layout[si]=ni;layout[sj]=nj;}
+  // ── 後処理: 男女配置改善（配慮なし生徒同士を交換） ──
+  // ※ ni/nj は「生徒番号 > 0」のセルのみ対象。0(未配置)や-1(空席)は絶対に交換しない
+  if(S.genderMode !== 'random'){
+    for(let iter = 0; iter < 80; iter++){
+      let improved = false;
+      for(let i = 0; i < valid.length; i++){
+        for(let j = i+1; j < valid.length; j++){
+          const si = valid[i], sj = valid[j];
+          const ni = layout[si], nj = layout[sj];
+          // 両方とも実際に生徒が配置されている席のみ交換する
+          if(ni === undefined || ni <= 0) continue;
+          if(nj === undefined || nj <= 0) continue;
+          const sti = S.students.find(s => s.num === ni);
+          const stj = S.students.find(s => s.num === nj);
+          if(!sti || !stj) continue;
+          // 配慮フラグのある生徒は交換しない
+          const hasCare = s =>
+            s.vision || s.posFront || s.posBack || s.posWin || s.posHall ||
+            (s.groups||[]).length || s.isLeader || s.care;
+          if(hasCare(sti) || hasCare(stj)) continue;
+          const before = calcScore(sti, si, layout) + calcScore(stj, sj, layout);
+          layout[si] = nj; layout[sj] = ni;
+          const after  = calcScore(stj, si, layout) + calcScore(sti, sj, layout);
+          if(after < before){ improved = true; }
+          else { layout[si] = ni; layout[sj] = nj; } // 改善なければ必ず元に戻す
         }
       }
-      if(!improved)break;
+      if(!improved) break;
     }
   }
+
+  // ── 最終チェック: valid席なのに0のままの席がないか確認 ──
+  // （デバッグ用。本来は発生しないはず）
+  const stillEmpty = valid.filter(si => layout[si] === 0);
+  if(stillEmpty.length > 0){
+    // 残っている生徒を強制配置（二重安全網）
+    const leftover = stus.filter(s => !layout.includes(s.num));
+    leftover.forEach((stu, idx) => {
+      if(idx < stillEmpty.length){
+        layout[stillEmpty[idx]] = stu.num;
+      }
+    });
+    if(leftover.length > 0){
+      setTimeout(() => {
+        alert(`⚠️ 配置エラーが発生した生徒がいます：${leftover.map(s=>s.name).join('、')}\n強制配置しました。ドラッグで調整してください。`);
+      }, 300);
+    }
+  }
+
   return layout;
 }
 
@@ -1006,7 +1059,13 @@ function handleStart(){
   if(!stus.length){alert('先生が名簿を登録していません。設定画面から登録してください。');return;}
   if(!confirm('🎲 席替えルーレットをスタートします！\n\n⚠️ このルーレットは1回しか使えません。\nよろしいですか？'))return;
 
-  const layout=genLayout();
+  // ②最後に保存した座席配置を使う。なければ新規生成
+  let layout;
+  if(S.history.length>0 && S.history[0].layout && S.history[0].layout.length>0){
+    layout=[...S.history[0].layout];
+  } else {
+    layout=genLayout();
+  }
   if(!layout)return;
   rlt.layout=layout;
   rlt.spinning=true;
@@ -1300,12 +1359,23 @@ function delHist(i){
 }
 
 // ==========================================================
-// CSV
+// CSV （2種）
 // ==========================================================
+function downloadCSV(content, filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'}));
+  a.download=filename;
+  a.click();
+}
+
 function exportCSV(){
   if(!S.currentLayout||S.currentLayout.every(v=>!v))return showToast('先に席替えを実行してください','error');
-  const rows=[];
+  const dateStr=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
+
+  // ── ① 名前のみ座席表 ──────────────────────────
+  // 黒板側（前）を上にした座席グリッド。行=前から後ろ、列=左から右
   const header=Array.from({length:S.cols},(_,c)=>`${c+1}列目`);
+  const nameRows=[];
   for(let r=0;r<S.rows;r++){
     const row=[];
     for(let c=0;c<S.cols;c++){
@@ -1315,14 +1385,33 @@ function exportCSV(){
       const stu=snum>0?S.students.find(s=>s.num===snum):null;
       row.push(stu?stu.name:'');
     }
-    rows.push(row);
+    nameRows.push(row);
   }
-  const csv='\uFEFF'+[`# ${S.className} 座席表（黒板が上）`,header.join(','),...rows.map(r=>r.join(','))].join('\r\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`座席表_${S.className}_${new Date().toLocaleDateString('ja-JP').replace(/\//g,'-')}.csv`;
-  a.click();
-  showToast('CSVを出力しました','success');
+  const csv1=[
+    `# ${S.className} 座席表（黒板が上・名前のみ）`,
+    header.join(','),
+    ...nameRows.map(r=>r.join(','))
+  ].join('\r\n');
+  downloadCSV(csv1, `座席表_名前_${S.className}_${dateStr}.csv`);
+
+  // ── ② データ加工用 ──────────────────────────
+  // 左上から行順・列順に「出席番号,名前」を1行ずつ出力
+  // 空席はスキップ
+  const dataLines=['# データ加工用（左上の席から順）','出席番号,名前'];
+  for(let r=0;r<S.rows;r++){
+    for(let c=0;c<S.cols;c++){
+      const si=r*S.cols+c;
+      if(S.emptySeats.includes(si))continue;
+      const snum=S.currentLayout[si];
+      if(!snum||snum<=0)continue;
+      const stu=S.students.find(s=>s.num===snum);
+      if(stu) dataLines.push(`${stu.num},${stu.name}`);
+    }
+  }
+  setTimeout(()=>{
+    downloadCSV(dataLines.join('\r\n'), `座席表_データ_${S.className}_${dateStr}.csv`);
+    showToast('CSVを2ファイル出力しました','success');
+  },400);
 }
 
 // ==========================================================
