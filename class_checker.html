@@ -10,10 +10,34 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--mode-bg);min-height:100vh;color:var(--ink);transition:background .25s;padding-bottom:130px;}
   .header{background:var(--mode-header);border-bottom:3px solid var(--ink);position:sticky;top:0;z-index:100;box-shadow:0 4px 0 var(--shadow);transition:background .25s;}
-  .tabs{display:flex;border-bottom:2px solid var(--ink);}
-  .tab-btn{flex:1;height:42px;border:none;border-right:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--ink-light);transition:all .15s;-webkit-tap-highlight-color:transparent;padding:0 2px;}
-  .tab-btn:last-child{border-right:none;}
-  .tab-btn.active-hw{background:#c84b2f;color:#fff;} .tab-btn.active-sh{background:#2e7d4f;color:#fff;} .tab-btn.active-mm{background:#1a3a6b;color:#fff;} .tab-btn.active-sb{background:#7b3fa0;color:#fff;}
+  /* タブ非表示（ハンバーガーに移動） */
+  .tabs{display:none;}
+  .tab-btn{display:none;}
+  .tab-btn.active-hw{} .tab-btn.active-wh{} .tab-btn.active-sh{} .tab-btn.active-mm{} .tab-btn.active-sb{}
+  /* ─── ハンバーガーメニュー ─── */
+  .hdr-bar{display:flex;align-items:center;padding:10px 14px 8px;gap:10px;}
+  .hdr-mode{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--mode-accent);border:1.5px solid var(--mode-accent);padding:2px 8px;flex-shrink:0;}
+  .hdr-date{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--ink);flex:1;}
+  .hdr-date .weekday{font-size:11px;font-weight:400;color:var(--mode-accent);margin-left:5px;font-family:'Zen Kaku Gothic New',sans-serif;}
+  .hdr-hamburger{width:44px;height:44px;border:2px solid var(--ink);background:var(--paper);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;box-shadow:2px 2px 0 var(--ink);-webkit-tap-highlight-color:transparent;}
+  .hdr-hamburger span{display:block;width:20px;height:2px;background:var(--ink);}
+  /* ドロワーメニュー */
+  .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:400;}
+  .drawer-overlay.open{display:block;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:72vw;max-width:280px;background:var(--paper);border-left:3px solid var(--ink);z-index:401;transform:translateX(100%);transition:transform .2s ease;overflow-y:auto;padding-bottom:40px;}
+  .drawer.open{transform:translateX(0);}
+  .drawer-header{padding:16px 16px 12px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between;}
+  .drawer-title{font-size:14px;font-weight:900;letter-spacing:.08em;}
+  .drawer-close{font-size:22px;cursor:pointer;color:var(--ink-light);background:none;border:none;padding:4px 8px;}
+  /* ドロワー内セクション */
+  .drawer-section{padding:10px 14px 6px;border-bottom:1px solid var(--grid-line);}
+  .drawer-section-label{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--ink-light);margin-bottom:8px;}
+  .drawer-item{display:flex;align-items:center;gap:10px;width:100%;height:48px;border:none;background:transparent;font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:var(--ink);-webkit-tap-highlight-color:transparent;padding:0 4px;border-radius:0;}
+  .drawer-item:active{background:var(--bg);}
+  .drawer-item.active-mode{color:var(--mode-accent);}
+  .drawer-item .di-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .drawer-item .di-label{font-size:14px;font-weight:700;}
+  .drawer-item .di-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto;}
   .header-body{padding:10px 16px 8px;}
   .header-top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
   .mode-label{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--mode-accent);border:1.5px solid var(--mode-accent);padding:2px 7px;flex-shrink:0;transition:color .2s,border-color .2s;}
@@ -134,6 +158,18 @@
   .sb-toolbar{padding:8px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .sb-session-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;transition:all .1s;white-space:nowrap;}
   .sb-session-tab.act{background:#7b3fa0;color:white;border-color:#7b3fa0;}
+  .sb-session-tab.closed{background:var(--bg);border-color:var(--grid-line);color:var(--grid-line);text-decoration:line-through;display:none;}
+  /* セッションアクションシート */
+  .sb-action-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:350;align-items:flex-end;}
+  .sb-action-overlay.open{display:flex;}
+  .sb-action-sheet{background:var(--paper);width:100%;border-top:3px solid var(--ink);padding:16px 16px 32px;}
+  .sb-action-title{font-size:14px;font-weight:900;margin-bottom:12px;color:var(--ink);}
+  .sb-action-sub{font-size:11px;color:var(--ink-light);margin-bottom:14px;}
+  .sb-action-btn{width:100%;height:50px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;text-align:left;padding:0 16px;-webkit-tap-highlight-color:transparent;}
+  .sb-action-btn:active{background:var(--bg);}
+  .sb-action-btn.danger{color:#c84b2f;border-color:#c84b2f;}
+  .sb-action-btn.complete{color:#2e7d4f;border-color:#2e7d4f;}
+  .sb-action-cancel{width:100%;height:46px;border:2px solid var(--ink-light);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-light);margin-top:4px;}
   .sb-add-tab{flex-shrink:0;padding:5px 10px;border:2px dashed var(--grid-line);background:transparent;font-size:18px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;}
   .sb-legend{display:flex;gap:6px;padding:5px 12px 0;flex-wrap:wrap;}
   .sb-leg-item{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--ink-light);font-weight:700;}
@@ -141,9 +177,9 @@
 
   /* ─── BOTTOM BAR ─── */
   .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:3px solid var(--ink);padding:10px 13px;display:flex;gap:7px;box-shadow:0 -4px 0 var(--shadow);}
-  .btn{flex:1;height:50px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;letter-spacing:.02em;cursor:pointer;transition:all .12s;box-shadow:3px 3px 0 var(--ink);-webkit-tap-highlight-color:transparent;line-height:1.3;}
+  .btn{flex:1;height:50px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;letter-spacing:.02em;cursor:pointer;transition:all .12s;box-shadow:3px 3px 0 var(--ink);-webkit-tap-highlight-color:transparent;line-height:1.3;}
   .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
-  .btn-csv{color:white;flex:2;} .btn-names{background:var(--green);color:white;border-color:var(--green);} .btn-hist{background:var(--ink);color:white;border-color:var(--ink);}
+  .btn-csv{color:white;} .btn-names{background:var(--green);color:white;border-color:var(--green);} .btn-hist{background:var(--ink);color:white;border-color:var(--ink);}
 
   /* ─── MODALS共通 ─── */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.7);z-index:200;align-items:flex-end;}
@@ -273,6 +309,18 @@
 
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;font-size:13px;font-weight:700;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
   .toast.show{opacity:1;}
+  /* 使い方モーダル */
+  .help-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.75);z-index:350;align-items:flex-end;}
+  .help-overlay.open{display:flex;}
+  .help-box{background:var(--paper);width:100%;max-height:85vh;border-top:3px solid var(--ink);overflow-y:auto;padding:18px 16px 40px;}
+  .help-title{font-size:16px;font-weight:900;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+  .help-close{font-size:22px;cursor:pointer;color:var(--ink-light);background:none;border:none;padding:4px 8px;}
+  .help-section{margin-bottom:18px;}
+  .help-section-title{font-size:13px;font-weight:900;letter-spacing:.08em;padding:6px 10px;margin-bottom:8px;border-left:4px solid var(--mode-accent);background:var(--bg);}
+  .help-item{font-size:12px;line-height:1.8;color:var(--ink);padding:0 4px;margin-bottom:4px;}
+  .help-item b{font-weight:900;}
+  .help-chip{display:inline-block;padding:1px 7px;border:1.5px solid var(--ink-light);font-size:11px;font-weight:700;color:var(--ink-light);vertical-align:middle;margin:0 2px;}
+  .btn-help{background:var(--paper);color:var(--ink-light);border-color:var(--ink-light);}
   .btn-seat{background:#5a2d80;color:white;border-color:#5a2d80;}
   /* ─── 席替えモーダル ─── */
   .seat-overlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:500;flex-direction:column;overflow:hidden;}
@@ -365,20 +413,14 @@
 <body>
 <div class="bg-lines"></div>
 <div class="header">
-  <div class="tabs">
-    <button class="tab-btn" id="tab-hw" onclick="switchMode('hw')">📝 宿題</button>
-    <button class="tab-btn" id="tab-wh" onclick="switchMode('wh')">📖 週宿題</button>
-    <button class="tab-btn" id="tab-sh" onclick="requestModeSwitch('sh')">🏆 賞状</button>
-    <button class="tab-btn" id="tab-mm" onclick="requestModeSwitch('mm')">✎ メモ</button>
-    <button class="tab-btn" id="tab-sb" onclick="requestModeSwitch('sb')">📋 提出物</button>
+  <div class="hdr-bar">
+    <span class="hdr-mode" id="modeLabel">宿題</span>
+    <div class="hdr-date"><span id="dateStr">--</span><span class="weekday" id="weekdayStr">--</span></div>
+    <button class="hdr-hamburger" id="hamburgerBtn" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <div class="header-body">
-    <div class="header-top">
-      <span class="mode-label" id="modeLabel">宿題</span>
-      <div class="date-display"><span id="dateStr">--</span><span class="weekday" id="weekdayStr">--</span></div>
-    </div>
-    <div class="status-bar" id="statusBar"></div>
-  </div>
+  <div class="status-bar" id="statusBar" style="padding:0 14px 8px;"></div>
   <div class="hw-legend" id="hwLegend" style="display:none">
     <div class="hw-leg-item"><div class="hw-leg-dot" style="background:#1d6638"></div>提出</div>
     <div class="hw-leg-item"><div class="hw-leg-dot" style="background:#1a1208"></div>欠席</div>
@@ -414,10 +456,56 @@
 </div>
 
 <div class="bottom-bar">
-  <button class="btn btn-csv" id="btnCsv" onclick="saveAndExportToday()">保存 &amp; CSV</button>
-  <button class="btn btn-names" id="btnNames" onclick="requestEditMode()">名前編集</button>
-  <button class="btn btn-seat" id="btnSeat" onclick="openSeatEditor()" style="display:none">🪑 席替え</button>
-  <button class="btn btn-hist" onclick="requestHistory()">履歴</button>
+  <button class="btn btn-csv" id="btnCsv" onclick="saveAndExportToday()">💾 保存 &amp; CSV</button>
+</div>
+
+<!-- ドロワーオーバーレイ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-title">メニュー</span>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <!-- モード切替 -->
+  <div class="drawer-section">
+    <div class="drawer-section-label">画面切替</div>
+    <button class="drawer-item" id="di-hw" onclick="drawerSwitch('hw')">
+      <span class="di-icon">📝</span><span class="di-label">宿題</span>
+      <span class="di-dot" style="background:#c84b2f"></span>
+    </button>
+    <button class="drawer-item" id="di-wh" onclick="drawerSwitch('wh')">
+      <span class="di-icon">📖</span><span class="di-label">週宿題</span>
+      <span class="di-dot" style="background:#8b5e00"></span>
+    </button>
+    <button class="drawer-item" id="di-sh" onclick="drawerSwitch('sh')">
+      <span class="di-icon">🏆</span><span class="di-label">賞状</span>
+      <span class="di-dot" style="background:#2e7d4f"></span>
+    </button>
+    <button class="drawer-item" id="di-mm" onclick="drawerSwitch('mm')">
+      <span class="di-icon">✎</span><span class="di-label">メモ</span>
+      <span class="di-dot" style="background:#1a3a6b"></span>
+    </button>
+    <button class="drawer-item" id="di-sb" onclick="drawerSwitch('sb')">
+      <span class="di-icon">📋</span><span class="di-label">提出物</span>
+      <span class="di-dot" style="background:#7b3fa0"></span>
+    </button>
+  </div>
+  <!-- 操作 -->
+  <div class="drawer-section">
+    <div class="drawer-section-label">操作</div>
+    <button class="drawer-item" onclick="drawerEditMode()">
+      <span class="di-icon">✎</span><span class="di-label" id="drawerEditLabel">名前編集</span>
+    </button>
+    <button class="drawer-item" id="drawerSeatBtn" onclick="drawerSeat()" style="display:none">
+      <span class="di-icon">🪑</span><span class="di-label">席替え</span>
+    </button>
+    <button class="drawer-item" onclick="drawerHistory()">
+      <span class="di-icon">📋</span><span class="di-label">履歴・CSV</span>
+    </button>
+    <button class="drawer-item" onclick="drawerHelp()">
+      <span class="di-icon">❓</span><span class="di-label">使い方</span>
+    </button>
+  </div>
 </div>
 
 <!-- 評価選択ポップアップ -->
@@ -433,6 +521,88 @@
       <button class="sb-eval-btn ev-none" style="grid-column:1/-1" onclick="setSbGrade('')">未提出に戻す</button>
     </div>
     <button class="sb-eval-cancel" onclick="closeSbEval()">キャンセル</button>
+  </div>
+</div>
+
+<!-- 使い方モーダル -->
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-box">
+    <div class="help-title">
+      <span>📖 使い方ガイド</span>
+      <button class="help-close" onclick="closeHelp()">×</button>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#c84b2f">📝 宿題タブ</div>
+      <div class="help-item">番号ボタンを<b>1回タップ</b>→提出（緑）、<b>2回</b>→欠席（黒）、<b>3回</b>→未提出に戻る</div>
+      <div class="help-item">タブは子どもが見ても問題ない設計。他タブへの移動にはパスワードが必要です</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#8b5e00">📖 週宿題タブ</div>
+      <div class="help-item">上部 <b>＋</b> ボタンで種類を追加（例：日記・読書記録）</div>
+      <div class="help-item">操作は宿題タブと同じ（提出○／欠席／未提出）</div>
+      <div class="help-item">前回提出から<b>5日で黄色</b>、<b>7日で赤</b>の警告表示</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#2e7d4f">🏆 賞状タブ</div>
+      <div class="help-item">番号をタップ→ミニ賞状を渡した記録（緑）</div>
+      <div class="help-item">最後に渡した日が古い子が自動でハイライト（★1〜3）</div>
+      <div class="help-item">もう一度タップで取り消し</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#1a3a6b">✎ メモタブ</div>
+      <div class="help-item">番号タップ→メモ入力画面が開く</div>
+      <div class="help-item"><b>記述タブ</b>：自由入力。教科ショートカットで「国語➝」を素早く挿入</div>
+      <div class="help-item"><b>チェックタブ</b>：教科→観点の順でタップして記録。⚙で観点をカスタマイズ可</div>
+      <div class="help-item">日付タブで過去のメモを読み返せる（編集は今日分のみ）</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#7b3fa0">📋 提出物タブ</div>
+      <div class="help-item">上部 <b>＋</b> → 教科・内容・観点を選んでセッション作成</div>
+      <div class="help-item">セッション名には<b>作成日が自動付与</b>されます（例：算数ノート 4/7）</div>
+      <div class="help-item"><b>1回タップ</b>→B評価、<b>2回タップ（素早く）</b>→評価選択ポップアップ</div>
+      <div class="help-item">ポップアップには選んだ観点の評価基準表が表示されます</div>
+      <div class="help-item">欠席者は宿題タブから自動連携（手動変更可）</div>
+      <div class="help-item">セッションタブを<b>長押し</b>→「完結」または「削除」のメニュー</div>
+      <div class="help-item">完結時：欠席（abs）は「未提出」に変換、タブから非表示になります</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#5a2d80">🪑 席替え（名前編集モード中に表示）</div>
+      <div class="help-item">名前編集ボタン→パスワード→「席替え」ボタン</div>
+      <div class="help-item">座席をドラッグ＆ドロップで入れ替え、行×列を自由設定</div>
+      <div class="help-item">CSV読込で「番号,名前」を一括登録できます</div>
+      <div class="help-item">保存すると全タブのグリッドが席順に変わります</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#2e7d4f">💾 保存・CSV・バックアップ</div>
+      <div class="help-item"><b>保存 &amp; CSV</b>：今日のデータを保存してCSVダウンロード</div>
+      <div class="help-item">列順：番号 / 宿題 / 週宿題（種類ごと）/ 賞状 / メモ / 提出物</div>
+      <div class="help-item"><b>履歴</b>→「JSONバックアップを保存」で全データをバックアップ</div>
+      <div class="help-item">「JSONファイルをインポート」で別端末への引き継ぎが可能</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title" style="border-color:#1a1208">🔒 パスワード</div>
+      <div class="help-item">名前編集・タブ切替・履歴閲覧に必要です</div>
+      <div class="help-item">パスワードは担任の先生にご確認ください</div>
+    </div>
+  </div>
+</div>
+
+<!-- セッションアクションシート -->
+<div class="sb-action-overlay" id="sbActionOverlay">
+  <div class="sb-action-sheet">
+    <div class="sb-action-title" id="sbActionTitle"></div>
+    <div class="sb-action-sub" id="sbActionSub"></div>
+    <button class="sb-action-btn complete" onclick="completeSbSession()">✅ 完結済みにする（欠席→未提出に変換）</button>
+    <button class="sb-action-btn danger"   onclick="deleteSbSessionAction()">🗑 削除する</button>
+    <button class="sb-action-cancel"       onclick="closeSbAction()">キャンセル</button>
   </div>
 </div>
 
@@ -673,6 +843,7 @@ let mode='hw',names={},editMode=false,pwBuf='',pwPurpose='edit',neTarget=null;
 let memoTarget=null,memoDate=null,memoSubtab='check';
 let ckSubject=null,ckItems=[];
 let sbSession=null; // 現在選択中のセッションid
+let sbActionTarget=null; // アクションシート対象セッションid
 let whTypeId=null;  // 現在選択中の週宿題種類id
 
 /* ══ ストレージ ══ */
@@ -733,10 +904,11 @@ function doSwitch(m){
   r.setProperty('--mode-accent',cfg.accent);r.setProperty('--mode-bg',cfg.bg);
   r.setProperty('--mode-header',cfg.header);r.setProperty('--mode-sub',cfg.sub);
   document.body.style.background=cfg.bg;
-  ['hw','wh','sh','mm','sb'].forEach(id=>{document.getElementById('tab-'+id).className='tab-btn'+(id===m?' active-'+id:'');});
+  // タブ非表示のためスキップ（ドロワー内はopenDrawer時に更新）
   document.getElementById('modeLabel').textContent=cfg.label;
   document.getElementById('btnCsv').style.background=cfg.accent;
   document.getElementById('btnCsv').style.borderColor=cfg.accent;
+  document.getElementById('btnCsv').style.boxShadow='3px 3px 0 var(--ink)';
   document.getElementById('legend').classList.toggle('visible',m==='sh');
   document.getElementById('hwLegend').style.display=(m==='hw'||m==='wh')?'flex':'none';
   document.getElementById('sbToolbar').style.display=m==='sb'?'block':'none';
@@ -896,11 +1068,6 @@ function buildGrid(){
   }
   document.getElementById('statusBar').innerHTML=info;
   document.getElementById('editBadge').classList.toggle('visible',editMode);
-  const bn=document.getElementById('btnNames');
-  bn.textContent=editMode?'編集終了':'名前編集';
-  bn.style.background=editMode?'var(--ink)':'var(--green)';
-  bn.style.borderColor=editMode?'var(--ink)':'var(--green)';
-  document.getElementById('btnSeat').style.display=editMode?'':'none';
 }
 
 function makeBtn(i){
@@ -1042,15 +1209,16 @@ function saveSbDay(day){
 // セッションタブ描画
 function renderSbToolbar(){
   const day=getSbDay();const row=document.getElementById('sbTabRow');row.innerHTML='';
-  day.sessions.forEach(sess=>{
+  // 完結済みを除いた未完結セッションのみ表示
+  const activeSessions=day.sessions.filter(s=>!s.closed);
+  activeSessions.forEach(sess=>{
     const tab=el('button','sb-session-tab');
     if(sess.id===sbSession)tab.classList.add('act');
-    // 名前＋削除ボタン（長押しで削除）
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'');
     tab.addEventListener('click',()=>{sbSession=sess.id;renderSbToolbar();buildGrid();});
-    // 長押しで削除
+    // 長押しでアクションシート
     let pressTimer;
-    tab.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>{if(confirm(`「${sess.name}」を削除しますか？`)){removeSbSession(sess.id);}},700);});
+    tab.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>openSbAction(sess.id),600);});
     tab.addEventListener('pointerup',()=>clearTimeout(pressTimer));
     tab.addEventListener('pointerleave',()=>clearTimeout(pressTimer));
     row.appendChild(tab);
@@ -1059,13 +1227,62 @@ function renderSbToolbar(){
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
   addBtn.addEventListener('click',openSbAdd);
   row.appendChild(addBtn);
+  // アクティブセッションが完結済みになっていたら別のに切り替え
+  if(sbSession&&!activeSessions.find(s=>s.id===sbSession)){
+    sbSession=activeSessions.length?activeSessions[activeSessions.length-1].id:null;
+  }
 }
 
 function removeSbSession(id){
   const day=getSbDay();
   day.sessions=day.sessions.filter(s=>s.id!==id);
-  if(sbSession===id) sbSession=day.sessions.length?day.sessions[day.sessions.length-1].id:null;
+  if(sbSession===id){const act=day.sessions.filter(s=>!s.closed);sbSession=act.length?act[act.length-1].id:null;}
   saveSbDay(day);renderSbToolbar();buildGrid();
+}
+
+/* セッションアクションシート */
+function openSbAction(id){
+  sbActionTarget=id;
+  const day=getSbDay();
+  const sess=day.sessions.find(s=>s.id===id);
+  if(!sess)return;
+  const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
+  document.getElementById('sbActionTitle').textContent=sess.name+(sess.kan?` [${sess.kan}]`:'');
+  document.getElementById('sbActionSub').textContent=
+    absCount>0?`欠席者${absCount}人 → 完結時に「未提出」へ変換されます`:'全員のデータが揃っています';
+  document.getElementById('sbActionOverlay').classList.add('open');
+}
+function closeSbAction(){
+  document.getElementById('sbActionOverlay').classList.remove('open');
+  sbActionTarget=null;
+}
+function completeSbSession(){
+  if(!sbActionTarget)return;
+  const day=getSbDay();
+  const sess=day.sessions.find(s=>s.id===sbActionTarget);
+  if(!sess){closeSbAction();return;}
+  // absを全て未提出(none)に変換
+  Object.keys(sess.grades||{}).forEach(n=>{
+    if(sess.grades[n]==='abs')sess.grades[n]='none';
+  });
+  sess.closed=true;
+  // 宿題タブの自動abs連携も解除（完結後は独立）
+  saveSbDay(day);
+  closeSbAction();
+  // 完結したセッションからアクティブを切り替え
+  const active=day.sessions.filter(s=>!s.closed);
+  if(sbSession===sbActionTarget)sbSession=active.length?active[active.length-1].id:null;
+  renderSbToolbar();buildGrid();
+  showToast('セッションを完結しました');
+}
+function deleteSbSessionAction(){
+  if(!sbActionTarget)return;
+  const day=getSbDay();
+  const sess=day.sessions.find(s=>s.id===sbActionTarget);
+  if(!sess){closeSbAction();return;}
+  if(!confirm(`「${sess.name}」を削除しますか？この操作は取り消せません。`))return;
+  closeSbAction();
+  removeSbSession(sbActionTarget);
 }
 
 // セッション追加モーダル
@@ -1107,8 +1324,10 @@ function closeSbAdd(){document.getElementById('sbAddOverlay').classList.remove('
 function addSbSession(){
   const inp=document.getElementById('sbNewName').value.trim();
   if(!inp&&!sbSelectedSubj)return;
-  const name=sbSelectedSubj?(sbSelectedSubj+(inp?' '+inp:'')):inp;
-  if(!name)return;
+  const baseName=sbSelectedSubj?(sbSelectedSubj+(inp?' '+inp:'')):inp;
+  if(!baseName)return;
+  // 作成日を自動付与（例：算数ノート 4/7）
+  const name=baseName+' '+fmtShort(today());
   // マスタ保存なし
   const day=getSbDay();
   const id='s'+Date.now();
@@ -1124,7 +1343,6 @@ function addSbSession(){
 
 // 評価サイクル
 let sbEvalTarget=null;
-let sbLastTap={n:null,time:0};
 let sbSelectedKan='';
 
 function cycleSb(n){
@@ -1132,18 +1350,14 @@ function cycleSb(n){
   const cur=sess.grades[n]||'';
   if(cur==='abs')return; // 欠席者はタップ不可
 
-  const now=Date.now();
-  const isDouble=(sbLastTap.n===n && now-sbLastTap.time<600);
-  sbLastTap={n,time:now};
-
-  if(isDouble){
-    // 2回目タップ: 評価選択ポップアップ
-    openSbEval(n);
-  } else if(cur===''){
-    // 1回目タップ(未設定): Bにセット
+  if(cur===''){
+    // 未評価 → B にセット
     saveSbGrade(n,'B');
+  } else if(cur==='B'){
+    // B状態 → 評価選択ポップアップ（変更or未提出に戻す）
+    openSbEval(n);
   }
-  // 1回目で既にB以上の場合は何もしない（2回目タップ待ち）
+  // B以外（B+/A/C）はタップ無反応（評価ポップアップ経由でのみ変更可）
 }
 
 function openSbEval(n){
@@ -1719,10 +1933,51 @@ function clearNeName(){if(!neTarget)return;delete names[neTarget];ls.set(KEY_NAM
 
 /* ══ ユーティリティ ══ */
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* ══ ドロワーメニュー ══ */
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  // 現在モードのアイテムをハイライト
+  ['hw','wh','sh','mm','sb'].forEach(m=>{
+    const el2=document.getElementById('di-'+m);
+    if(el2)el2.classList.toggle('active-mode',m===mode);
+  });
+  document.getElementById('drawerEditLabel').textContent=editMode?'編集終了':'名前編集';
+  document.getElementById('drawerSeatBtn').style.display=editMode?'flex':'none';
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+function drawerSwitch(m){
+  closeDrawer();
+  if(m==='hw'||m==='wh') doSwitch(m);
+  else requestModeSwitch(m);
+}
+function drawerEditMode(){
+  closeDrawer();
+  requestEditMode();
+}
+function drawerSeat(){
+  closeDrawer();
+  openSeatEditor();
+}
+function drawerHistory(){
+  closeDrawer();
+  requestHistory();
+}
+function drawerHelp(){
+  closeDrawer();
+  openHelp();
+}
+
+function openHelp(){document.getElementById('helpOverlay').classList.add('open');}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open');}
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 /* モーダル外タップ */
-[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd]].forEach(([id,fn])=>{
+[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp]].forEach(([id,fn])=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fn();});
 });
 document.getElementById('neInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNeName();});
