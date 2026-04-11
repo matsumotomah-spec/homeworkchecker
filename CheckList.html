@@ -107,6 +107,15 @@
   .chip-red { background: #FEE2E2; color: #DC2626; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 99px; }
   .chip-amber { background: #FEF3C7; color: #D97706; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 99px; }
 
+  /* BACKUP */
+  .backup-section { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .backup-title { font-size: 14px; font-weight: 700; color: #7C3AED; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #F3F0FF; }
+  .backup-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-backup { font-size: 13px; padding: 9px 14px; background: #7C3AED; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+  .btn-restore { font-size: 13px; padding: 9px 14px; background: #EDE9FE; color: #7C3AED; border: 2px solid #C4B5FD; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+  .backup-note { font-size: 11px; color: #94A3B8; margin-top: 8px; }
+  .restore-ok { font-size: 13px; color: #10B981; font-weight: 700; margin-top: 8px; display: none; }
+
   /* MANAGE */
   .manage-section { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
   .manage-title { font-size: 14px; font-weight: 700; color: #1D4ED8; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #EFF6FF; }
@@ -190,6 +199,17 @@
 
   <!-- MANAGE TAB -->
   <div id="pane-manage" class="hidden">
+    <!-- Backup -->
+    <div class="backup-section">
+      <div class="backup-title">💾 バックアップ</div>
+      <div class="backup-btns">
+        <button class="btn-backup" onclick="downloadBackup()">📥 バックアップを作成</button>
+        <button class="btn-restore" onclick="document.getElementById('restore-input').click()">📤 バックアップを読み込む</button>
+        <input type="file" id="restore-input" accept=".json" style="display:none" onchange="loadBackup(event)">
+      </div>
+      <div class="backup-note">JSON形式で保存されます。ファイル名に日時が自動入力されます。</div>
+      <div class="restore-ok" id="restore-ok">✅ 読み込み完了！</div>
+    </div>
     <!-- Students -->
     <div class="manage-section">
       <div class="manage-title">👤 児童名</div>
@@ -505,6 +525,47 @@ function groupByItem(arr) {
   const map = {};
   arr.forEach(r=>{ if(!map[r.item]) map[r.item]=[]; map[r.item].push(r); });
   return Object.entries(map);
+}
+
+// ========== BACKUP / RESTORE ==========
+function getTimestamp() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+function downloadBackup() {
+  const data = { students, items, checks, nextId, savedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `チェック表バックアップ_${getTimestamp()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function loadBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.students || !data.items) throw new Error("形式エラー");
+      students = data.students;
+      items = data.items;
+      checks = data.checks || {};
+      nextId = data.nextId || (Math.max(...data.items.map(i=>i.id), 0) + 1);
+      const ok = document.getElementById("restore-ok");
+      ok.style.display = "block";
+      setTimeout(() => ok.style.display = "none", 3000);
+      render();
+    } catch {
+      alert("読み込みに失敗しました。正しいバックアップファイルを選択してください。");
+    }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
 }
 
 // ========== INIT ==========
