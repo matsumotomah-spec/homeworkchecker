@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>提出・配布チェック表</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+    background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%);
+    color: #1E293B;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1D4ED8, #0EA5E9);
+    color: #fff;
+    padding: 14px 16px 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header-inner { display: flex; align-items: center; gap: 10; margin-bottom: 10px; }
+  .header-icon { font-size: 26px; }
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+  .header-sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.3); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #A7F3D0; border-radius: 99px; transition: width 0.4s ease; }
+  .progress-label { font-size: 12px; white-space: nowrap; opacity: 0.9; }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    background: #fff;
+    border-bottom: 2px solid #E2E8F0;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .tab-btn {
+    flex: 1; padding: 12px 4px;
+    border: none; background: transparent;
+    font-size: 12px; color: #64748B; cursor: pointer;
+    font-weight: 600; border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .tab-btn.active { color: #1D4ED8; border-bottom-color: #1D4ED8; background: #EFF6FF; }
+
+  /* BODY */
+  .body { padding: 16px 14px 60px; max-width: 640px; margin: 0 auto; }
+
+  /* SECTION */
+  .section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .badge { color: #fff; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+  .reset-btn {
+    margin-left: auto; font-size: 12px; padding: 4px 10px;
+    background: #FEF2F2; color: #EF4444;
+    border: 1px solid #FCA5A5; border-radius: 6px; cursor: pointer;
+    font-family: inherit;
+  }
+  .count-badge { font-size: 12px; color: #64748B; background: #F1F5F9; padding: 2px 8px; border-radius: 99px; }
+
+  /* ITEM BLOCK */
+  .item-block {
+    background: #fff; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .item-label {
+    font-size: 14px; font-weight: 700; margin-bottom: 10px;
+    padding-left: 10px; border-left: 4px solid #3B82F6; color: #1E293B;
+  }
+  .item-label.green { border-left-color: #10B981; }
+  .student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 7px;
+  }
+  .check-btn {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 6px; border-radius: 10px; border: 2px solid;
+    cursor: pointer; transition: all 0.15s; gap: 4px;
+    min-height: 62px; justify-content: center;
+    font-family: inherit;
+  }
+  .check-btn.todo { background: #F8FAFC; border-color: #CBD5E1; color: #94A3B8; }
+  .check-btn.done-blue { background: #DBEAFE; border-color: #3B82F6; color: #1D4ED8; }
+  .check-btn.done-green { background: #D1FAE5; border-color: #10B981; color: #065F46; }
+  .check-icon { font-size: 18px; font-weight: 700; line-height: 1; min-height: 20px; }
+  .check-name { font-size: 11px; font-weight: 600; text-align: center; word-break: break-all; }
+
+  .empty { color: #94A3B8; font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* ALL DONE */
+  .all-done { text-align: center; padding: 60px 20px; }
+  .all-done-icon { font-size: 60px; margin-bottom: 12px; }
+  .all-done-text { font-size: 20px; font-weight: 700; color: #10B981; }
+
+  /* MISSING */
+  .missing-block {
+    background: #fff; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .missing-item-name { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #374151; }
+  .missing-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip-red { background: #FEE2E2; color: #DC2626; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 99px; }
+  .chip-amber { background: #FEF3C7; color: #D97706; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 99px; }
+
+  /* MANAGE */
+  .manage-section { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .manage-title { font-size: 14px; font-weight: 700; color: #1D4ED8; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #EFF6FF; }
+  .manage-row { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid #F1F5F9; }
+  .manage-row:last-of-type { border-bottom: none; }
+  .manage-name { flex: 1; font-size: 14px; color: #1E293B; }
+  .edit-input {
+    flex: 1; font-size: 14px; padding: 6px 10px;
+    border: 2px solid #93C5FD; border-radius: 8px; outline: none;
+    font-family: inherit;
+  }
+  .type-select { font-size: 12px; padding: 6px; border: 1px solid #CBD5E1; border-radius: 8px; background: #F8FAFC; font-family: inherit; }
+  .add-row { display: flex; gap: 6px; margin-top: 10px; }
+  .add-input {
+    flex: 1; font-size: 14px; padding: 8px 12px;
+    border: 2px dashed #CBD5E1; border-radius: 10px; background: #F8FAFC; outline: none;
+    font-family: inherit;
+  }
+  .btn-save { font-size: 12px; padding: 6px 10px; background: #3B82F6; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; }
+  .btn-cancel { font-size: 12px; padding: 6px 10px; background: #F1F5F9; color: #64748B; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .btn-edit { font-size: 12px; padding: 5px 10px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .btn-del { font-size: 12px; padding: 5px 10px; background: #FEF2F2; color: #EF4444; border: 1px solid #FECACA; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .btn-add { font-size: 13px; padding: 8px 14px; background: #1D4ED8; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; white-space: nowrap; font-family: inherit; }
+
+  /* MODAL */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal { background: #fff; border-radius: 16px; padding: 24px 20px; max-width: 320px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .modal-text { font-size: 14px; color: #374151; margin-bottom: 20px; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-modal-cancel { padding: 8px 16px; background: #F1F5F9; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-family: inherit; }
+  .btn-modal-delete { padding: 8px 16px; background: #EF4444; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; font-family: inherit; }
+
+  .hidden { display: none !important; }
+  .mt20 { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <span class="header-icon">📋</span>
+    <div>
+      <div class="header-title">提出・配布チェック</div>
+      <div class="header-sub" id="header-sub">読み込み中...</div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="progress-label" id="progress-label">0 / 0 完了</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('check')" id="tab-check">✅ チェック</button>
+  <button class="tab-btn" onclick="switchTab('missing')" id="tab-missing">⚠️ 未処理</button>
+  <button class="tab-btn" onclick="switchTab('manage')" id="tab-manage">⚙️ 項目管理</button>
+</div>
+
+<!-- BODY -->
+<div class="body">
+  <!-- CHECK TAB -->
+  <div id="pane-check">
+    <div class="section-head">
+      <span class="badge" style="background:#3B82F6">📥 提出物</span>
+      <button class="reset-btn" onclick="resetAll()">リセット</button>
+    </div>
+    <div id="teishutsu-blocks"></div>
+    <div class="section-head mt20">
+      <span class="badge" style="background:#10B981">📤 配布物</span>
+    </div>
+    <div id="haifu-blocks"></div>
+  </div>
+
+  <!-- MISSING TAB -->
+  <div id="pane-missing" class="hidden">
+    <div id="missing-content"></div>
+  </div>
+
+  <!-- MANAGE TAB -->
+  <div id="pane-manage" class="hidden">
+    <!-- Students -->
+    <div class="manage-section">
+      <div class="manage-title">👤 児童名</div>
+      <div id="manage-students"></div>
+      <div class="add-row">
+        <input class="add-input" id="new-student-input" placeholder="新しい児童名" onkeydown="if(event.key==='Enter') addStudent()">
+        <button class="btn-add" onclick="addStudent()">＋追加</button>
+      </div>
+    </div>
+    <!-- Teishutsu items -->
+    <div class="manage-section">
+      <div class="manage-title">📥 提出物</div>
+      <div id="manage-teishutsu"></div>
+      <div class="add-row">
+        <input class="add-input" id="new-teishutsu-input" placeholder="新しい提出物名" onkeydown="if(event.key==='Enter') addItem('提出')">
+        <button class="btn-add" onclick="addItem('提出')">＋追加</button>
+      </div>
+    </div>
+    <!-- Haifu items -->
+    <div class="manage-section">
+      <div class="manage-title">📤 配布物</div>
+      <div id="manage-haifu"></div>
+      <div class="add-row">
+        <input class="add-input" id="new-haifu-input" placeholder="新しい配布物名" onkeydown="if(event.key==='Enter') addItem('配布')">
+        <button class="btn-add" onclick="addItem('配布')">＋追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">⚠️ 削除の確認</div>
+    <div class="modal-text" id="modal-text"></div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">キャンセル</button>
+      <button class="btn-modal-delete" onclick="confirmDeleteAction()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+let students = ["児童①","児童②","児童③","児童④","児童⑤"];
+let items = [
+  {id:1, name:"連絡帳", type:"提出"},
+  {id:2, name:"宿題（音読カード）", type:"提出"},
+  {id:3, name:"宿題（計算カード）", type:"提出"},
+  {id:4, name:"お便り（学級）", type:"配布"},
+  {id:5, name:"お便り（学校）", type:"配布"},
+  {id:6, name:"宿題プリント", type:"配布"},
+];
+let nextId = 7;
+let checks = {}; // "studentIdx_itemId" => true/false
+let currentTab = "check";
+let pendingDelete = null; // {kind, id}
+
+// ========== CORE ==========
+function toggleCheck(si, itemId) {
+  const k = si+"_"+itemId;
+  checks[k] = !checks[k];
+  render();
+}
+function isChecked(si, itemId) { return !!checks[si+"_"+itemId]; }
+function resetAll() { checks = {}; render(); }
+
+function teishutsuItems() { return items.filter(i=>i.type==="提出"); }
+function haifuItems()    { return items.filter(i=>i.type==="配布"); }
+
+function progressInfo() {
+  const total = students.length * items.length;
+  const done = Object.values(checks).filter(Boolean).length;
+  return {total, done, pct: total===0?0:Math.round(done/total*100)};
+}
+
+// ========== RENDER ==========
+function render() {
+  renderHeader();
+  if (currentTab==="check")   renderCheck();
+  if (currentTab==="missing") renderMissing();
+  if (currentTab==="manage")  renderManage();
+  renderTabBadge();
+}
+
+function renderHeader() {
+  const p = progressInfo();
+  document.getElementById("header-sub").textContent =
+    students.length+"名 ／ "+items.length+"項目";
+  document.getElementById("progress-fill").style.width = p.pct+"%";
+  document.getElementById("progress-label").textContent = p.done+" / "+p.total+" 完了";
+}
+
+function renderTabBadge() {
+  const missing = getMissingAll();
+  const n = missing.teishutsu.length + missing.haifu.length;
+  document.getElementById("tab-missing").textContent = n>0 ? "⚠️ 未処理("+n+")" : "⚠️ 未処理";
+}
+
+function renderCheck() {
+  renderItemBlocks("teishutsu-blocks", teishutsuItems(), "blue");
+  renderItemBlocks("haifu-blocks", haifuItems(), "green");
+}
+
+function renderItemBlocks(containerId, itemList, color) {
+  const el = document.getElementById(containerId);
+  if (itemList.length===0) { el.innerHTML='<div class="empty">項目がありません</div>'; return; }
+  el.innerHTML = itemList.map(item => {
+    const labelClass = color==="green" ? "item-label green" : "item-label";
+    const btns = students.map((stu, si) => {
+      const checked = isChecked(si, item.id);
+      const btnClass = checked ? (color==="green"?"check-btn done-green":"check-btn done-blue") : "check-btn todo";
+      const icon = checked ? "✓" : "・";
+      return `<button class="${btnClass}" onclick="toggleCheck(${si},${item.id})">
+        <span class="check-icon">${icon}</span>
+        <span class="check-name">${esc(stu)}</span>
+      </button>`;
+    }).join("");
+    return `<div class="item-block">
+      <div class="${labelClass}">${esc(item.name)}</div>
+      <div class="student-grid">${btns}</div>
+    </div>`;
+  }).join("");
+}
+
+function getMissingAll() {
+  const teishutsu = teishutsuItems().flatMap(it =>
+    students.map((s,si)=>({student:s,item:it.name,si,itemId:it.id}))
+            .filter(r=>!isChecked(r.si,r.itemId))
+  );
+  const haifu = haifuItems().flatMap(it =>
+    students.map((s,si)=>({student:s,item:it.name,si,itemId:it.id}))
+            .filter(r=>!isChecked(r.si,r.itemId))
+  );
+  return {teishutsu, haifu};
+}
+
+function renderMissing() {
+  const {teishutsu, haifu} = getMissingAll();
+  const el = document.getElementById("missing-content");
+  if (teishutsu.length+haifu.length===0) {
+    el.innerHTML='<div class="all-done"><div class="all-done-icon">🎉</div><div class="all-done-text">全員チェック済みです！</div></div>';
+    return;
+  }
+  let html="";
+  if (teishutsu.length>0) {
+    html += `<div class="section-head"><span class="badge" style="background:#EF4444">📥 未提出</span><span class="count-badge">${teishutsu.length}件</span></div>`;
+    html += groupByItem(teishutsu).map(([name,rows])=>`
+      <div class="missing-block">
+        <div class="missing-item-name">📌 ${esc(name)}</div>
+        <div class="missing-chips">${rows.map(r=>`<span class="chip-red">${esc(r.student)}</span>`).join("")}</div>
+      </div>`).join("");
+  }
+  if (haifu.length>0) {
+    html += `<div class="section-head mt20"><span class="badge" style="background:#F59E0B">📤 未配布</span><span class="count-badge">${haifu.length}件</span></div>`;
+    html += groupByItem(haifu).map(([name,rows])=>`
+      <div class="missing-block">
+        <div class="missing-item-name">📌 ${esc(name)}</div>
+        <div class="missing-chips">${rows.map(r=>`<span class="chip-amber">${esc(r.student)}</span>`).join("")}</div>
+      </div>`).join("");
+  }
+  el.innerHTML = html;
+}
+
+function renderManage() {
+  // Students
+  const ms = document.getElementById("manage-students");
+  ms.innerHTML = students.map((s,idx)=>`
+    <div class="manage-row">
+      <span class="manage-name">${esc(s)}</span>
+      <button class="btn-edit" onclick="startEditStudent(${idx})">編集</button>
+      <button class="btn-del" onclick="askDelete('student',${idx})">削除</button>
+    </div>`).join("");
+
+  // Teishutsu items
+  const mt = document.getElementById("manage-teishutsu");
+  mt.innerHTML = teishutsuItems().map(it=>`
+    <div class="manage-row">
+      <span class="manage-name">${esc(it.name)}</span>
+      <button class="btn-edit" onclick="startEditItem(${it.id})">編集</button>
+      <button class="btn-del" onclick="askDelete('item',${it.id})">削除</button>
+    </div>`).join("");
+
+  // Haifu items
+  const mh = document.getElementById("manage-haifu");
+  mh.innerHTML = haifuItems().map(it=>`
+    <div class="manage-row">
+      <span class="manage-name">${esc(it.name)}</span>
+      <button class="btn-edit" onclick="startEditItem(${it.id})">編集</button>
+      <button class="btn-del" onclick="askDelete('item',${it.id})">削除</button>
+    </div>`).join("");
+}
+
+// ========== EDIT - Student ==========
+function startEditStudent(idx) {
+  const ms = document.getElementById("manage-students");
+  const rows = ms.querySelectorAll(".manage-row");
+  if (rows[idx]) {
+    rows[idx].innerHTML = `
+      <input class="edit-input" id="edit-stu-input" value="${esc(students[idx])}"
+        onkeydown="if(event.key==='Enter') saveStudent(${idx})">
+      <button class="btn-save" onclick="saveStudent(${idx})">保存</button>
+      <button class="btn-cancel" onclick="renderManage()">取消</button>`;
+    document.getElementById("edit-stu-input").focus();
+  }
+}
+function saveStudent(idx) {
+  const val = document.getElementById("edit-stu-input")?.value.trim();
+  if (!val) return;
+  students[idx] = val;
+  render();
+}
+function addStudent() {
+  const inp = document.getElementById("new-student-input");
+  const val = inp.value.trim();
+  if (!val) return;
+  students.push(val);
+  inp.value = "";
+  render();
+}
+function deleteStudent(idx) {
+  students.splice(idx,1);
+  const newChecks = {};
+  Object.entries(checks).forEach(([k,v])=>{
+    const [si,iid] = k.split("_").map(Number);
+    if (si!==idx) { newChecks[(si>idx?si-1:si)+"_"+iid]=v; }
+  });
+  checks = newChecks;
+  render();
+}
+
+// ========== EDIT - Item ==========
+function startEditItem(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  // Find correct container
+  const containerId = item.type==="提出" ? "manage-teishutsu" : "manage-haifu";
+  const container = document.getElementById(containerId);
+  const rows = container.querySelectorAll(".manage-row");
+  const listItems = items.filter(i=>i.type===item.type);
+  const localIdx = listItems.findIndex(i=>i.id===id);
+  if (rows[localIdx]) {
+    rows[localIdx].innerHTML = `
+      <input class="edit-input" id="edit-item-input" value="${esc(item.name)}"
+        onkeydown="if(event.key==='Enter') saveItem(${id})">
+      <select class="type-select" id="edit-item-type">
+        <option value="提出"${item.type==="提出"?" selected":""}>提出</option>
+        <option value="配布"${item.type==="配布"?" selected":""}>配布</option>
+      </select>
+      <button class="btn-save" onclick="saveItem(${id})">保存</button>
+      <button class="btn-cancel" onclick="renderManage()">取消</button>`;
+    document.getElementById("edit-item-input").focus();
+  }
+}
+function saveItem(id) {
+  const val = document.getElementById("edit-item-input")?.value.trim();
+  const type = document.getElementById("edit-item-type")?.value;
+  if (!val) return;
+  const item = items.find(i=>i.id===id);
+  if (item) { item.name=val; item.type=type; }
+  render();
+}
+function addItem(type) {
+  const inputId = type==="提出" ? "new-teishutsu-input" : "new-haifu-input";
+  const inp = document.getElementById(inputId);
+  const val = inp.value.trim();
+  if (!val) return;
+  items.push({id:nextId++, name:val, type});
+  inp.value="";
+  render();
+}
+function deleteItem(id) {
+  items = items.filter(i=>i.id!==id);
+  const newChecks = {};
+  Object.entries(checks).forEach(([k,v])=>{
+    if (k.split("_")[1]!==String(id)) newChecks[k]=v;
+  });
+  checks = newChecks;
+  render();
+}
+
+// ========== DELETE MODAL ==========
+function askDelete(kind, id) {
+  pendingDelete = {kind, id};
+  let label = kind==="student" ? students[id] : items.find(i=>i.id===id)?.name;
+  document.getElementById("modal-text").textContent = "「"+label+"」を削除しますか？";
+  document.getElementById("modal-overlay").classList.remove("hidden");
+}
+function closeModal() {
+  pendingDelete = null;
+  document.getElementById("modal-overlay").classList.add("hidden");
+}
+function confirmDeleteAction() {
+  if (!pendingDelete) return;
+  if (pendingDelete.kind==="student") deleteStudent(pendingDelete.id);
+  else deleteItem(pendingDelete.id);
+  closeModal();
+}
+
+// ========== TAB SWITCH ==========
+function switchTab(name) {
+  currentTab = name;
+  ["check","missing","manage"].forEach(t=>{
+    document.getElementById("pane-"+t).classList.toggle("hidden", t!==name);
+    document.getElementById("tab-"+t).classList.toggle("active", t===name);
+  });
+  render();
+}
+
+// ========== UTILS ==========
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function groupByItem(arr) {
+  const map = {};
+  arr.forEach(r=>{ if(!map[r.item]) map[r.item]=[]; map[r.item].push(r); });
+  return Object.entries(map);
+}
+
+// ========== INIT ==========
+render();
+</script>
+</body>
+</html>
