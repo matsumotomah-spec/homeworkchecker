@@ -128,7 +128,7 @@
 
   /* ─── 提出物ボタン状態 ─── */
   /* A: 紫 */
-  .num-btn.sb-A{background:#7b3fa0;border-color:#7b3fa0;box-shadow:none;}
+  .num-btn.sb-A{background:#c0392b;border-color:#c0392b;box-shadow:none;}
   .num-btn.sb-A .btn-num{color:#fff;} .num-btn.sb-A .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-A .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-A .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
   /* B+: 青 */
@@ -136,13 +136,18 @@
   .num-btn.sb-Bp .btn-num{color:#fff;} .num-btn.sb-Bp .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-Bp .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-Bp .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
   /* B: 緑 */
-  .num-btn.sb-B{background:#1d6638;border-color:#1d6638;box-shadow:none;}
+  .num-btn.sb-B{background:#0f5a2e;border-color:#0f5a2e;box-shadow:none;}
   .num-btn.sb-B .btn-num{color:#fff;} .num-btn.sb-B .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-B .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-B .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
   /* C: オレンジ */
-  .num-btn.sb-C{background:#bf5000;border-color:#bf5000;box-shadow:none;}
-  .num-btn.sb-C .btn-num{color:#fff;} .num-btn.sb-C .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-C .btn-name{color:rgba(255,255,255,.9);}
-  .num-btn.sb-C .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
+  /* B-: 水色 */
+  .num-btn.sb-Bm{background:#0096a0;border-color:#0096a0;box-shadow:none;}
+  .num-btn.sb-Bm .btn-num{color:#fff;} .num-btn.sb-Bm .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-Bm .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sb-Bm .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
+  /* C: 黄 */
+  .num-btn.sb-C{background:#d4a800;border-color:#d4a800;box-shadow:none;}
+  .num-btn.sb-C .btn-num{color:#1a1208;} .num-btn.sb-C .btn-num.small{color:rgba(26,18,8,.6);} .num-btn.sb-C .btn-name{color:#1a1208;}
+  .num-btn.sb-C .btn-sub{color:rgba(26,18,8,.7);font-weight:700;}
   /* 未提出: 赤枠 */
   .num-btn.sb-none{border-color:#c84b2f;box-shadow:3px 3px 0 #c84b2f;}
   .num-btn.sb-none .btn-sub{color:#c84b2f;font-weight:700;}
@@ -390,10 +395,11 @@
   .sb-eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
   .sb-eval-btn{height:52px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:16px;font-weight:900;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .1s;box-shadow:2px 2px 0 var(--ink);}
   .sb-eval-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
-  .sb-eval-btn.ev-A{background:#7b3fa0;color:white;border-color:#7b3fa0;}
+  .sb-eval-btn.ev-A{background:#c0392b;color:white;border-color:#c0392b;}
   .sb-eval-btn.ev-Bp{background:#1a5fa0;color:white;border-color:#1a5fa0;}
-  .sb-eval-btn.ev-B{background:#1d6638;color:white;border-color:#1d6638;}
-  .sb-eval-btn.ev-C{background:#bf5000;color:white;border-color:#bf5000;}
+  .sb-eval-btn.ev-B{background:#0f5a2e;color:white;border-color:#0f5a2e;}
+  .sb-eval-btn.ev-Bm{background:#0096a0;color:white;border-color:#0096a0;}
+  .sb-eval-btn.ev-C{background:#d4a800;color:#1a1208;border-color:#c89800;}
   .sb-eval-btn.ev-none{background:var(--paper);color:#c84b2f;border-color:#c84b2f;}
   .sb-eval-cancel{width:100%;height:40px;border:2px solid var(--ink-light);background:var(--paper);color:var(--ink-light);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
   /* 基準表 */
@@ -401,12 +407,47 @@
   .sb-rubric-header{background:#7b3fa0;color:white;font-weight:700;padding:4px 8px;font-size:11px;letter-spacing:.05em;}
   .sb-rubric-row{display:flex;border-top:1px solid var(--grid-line);}
   .sb-rubric-grade{flex-shrink:0;width:30px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:900;font-size:13px;border-right:1px solid var(--grid-line);padding:6px 0;}
-  .sb-rubric-row.rA .sb-rubric-grade{color:#7b3fa0;}
+  .sb-rubric-row.rA  .sb-rubric-grade{color:#c0392b;}
   .sb-rubric-row.rBp .sb-rubric-grade{color:#1a5fa0;}
-  .sb-rubric-row.rB .sb-rubric-grade{color:#1d6638;}
-  .sb-rubric-row.rC .sb-rubric-grade{color:#bf5000;}
+  .sb-rubric-row.rB  .sb-rubric-grade{color:#0f5a2e;}
+  .sb-rubric-row.rBm .sb-rubric-grade{color:#0096a0;}
+  .sb-rubric-row.rC  .sb-rubric-grade{color:#c89800;}
   .sb-rubric-desc{flex:1;padding:5px 7px;color:var(--ink);line-height:1.5;}
   .sb-rubric-memo{flex-shrink:0;width:80px;padding:5px 5px;color:var(--ink-light);font-size:10px;line-height:1.5;border-left:1px solid var(--grid-line);font-style:italic;}
+  /* ─── 点数ボタン状態 ─── */
+  .num-btn.sc-100{background:#1a3a6b;border-color:#1a3a6b;box-shadow:none;}
+  .num-btn.sc-100 .btn-num{color:#fff;}.num-btn.sc-100 .btn-num.small{color:rgba(255,255,255,.7);}.num-btn.sc-100 .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sc-hi{background:#1d6638;border-color:#1d6638;box-shadow:none;}
+  .num-btn.sc-hi .btn-num{color:#fff;}.num-btn.sc-hi .btn-num.small{color:rgba(255,255,255,.7);}.num-btn.sc-hi .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sc-mid{background:#b8a000;border-color:#b8a000;box-shadow:none;}
+  .num-btn.sc-mid .btn-num{color:#fff;}.num-btn.sc-mid .btn-num.small{color:rgba(255,255,255,.7);}.num-btn.sc-mid .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sc-lo{background:#bf5000;border-color:#bf5000;box-shadow:none;}
+  .num-btn.sc-lo .btn-num{color:#fff;}.num-btn.sc-lo .btn-num.small{color:rgba(255,255,255,.7);}.num-btn.sc-lo .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sc-abs{background:#1a1208;border-color:#1a1208;box-shadow:none;}
+  .num-btn.sc-abs .btn-num{color:#fff;}.num-btn.sc-abs .btn-num.small{color:rgba(255,255,255,.6);}.num-btn.sc-abs .btn-name{color:rgba(255,255,255,.8);}
+  .sc-score-label{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:900;line-height:1;color:inherit;}
+  /* 点数入力モーダル */
+  .score-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:260;align-items:center;justify-content:center;}
+  .score-overlay.open{display:flex;}
+  .score-box{background:var(--paper);border:3px solid var(--ink);padding:18px 16px 16px;width:88%;max-width:320px;box-shadow:5px 5px 0 var(--ink);}
+  .score-who{font-size:13px;font-weight:900;margin-bottom:4px;text-align:center;color:var(--ink-light);}
+  .score-current{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:900;text-align:center;margin-bottom:12px;color:var(--ink);}
+  .score-tens{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+  .score-ten-btn{height:48px;border:2px solid var(--ink);background:var(--paper);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:2px 2px 0 var(--ink);}
+  .score-ten-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+  .score-ten-btn.sel{background:#1a3a6b;color:white;border-color:#1a3a6b;box-shadow:none;}
+  .score-adj-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+  .score-adj-btn{width:52px;height:44px;border:2px solid var(--ink);background:var(--paper);font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:2px 2px 0 var(--ink);flex-shrink:0;}
+  .score-adj-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+  .score-adj-val{flex:1;font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:900;text-align:center;color:var(--ink);}
+  .score-btns{display:flex;gap:7px;}
+  .score-cancel{flex:1;height:44px;border:2px solid var(--ink-light);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-light);}
+  .score-clear{height:44px;padding:0 12px;border:2px solid #c84b2f;background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#c84b2f;}
+  .score-ok{flex:2;height:44px;border:2px solid #1a3a6b;background:#1a3a6b;font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:white;}
+  /* セッション追加のタイプ選択 */
+  .sb-type-sel{display:flex;gap:7px;margin-bottom:12px;}
+  .sb-type-btn{flex:1;height:44px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;transition:all .1s;}
+  .sb-type-btn.sel{background:#7b3fa0;color:white;border-color:#7b3fa0;}
   .grid-container,.header,.bottom-bar{position:relative;z-index:1;}
 </style>
 </head>
@@ -440,10 +481,11 @@
   <div id="sbToolbar" style="display:none">
     <div class="sb-toolbar" id="sbTabRow"></div>
     <div class="sb-legend">
-      <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1d6638"></div>B</div>
+      <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0f5a2e"></div>B</div>
+      <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0096a0"></div>B-</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1a5fa0"></div>B+</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#7b3fa0"></div>A</div>
-      <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#bf5000"></div>C</div>
+      <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#d4a800"></div>C</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:var(--paper);border:1.5px solid #c84b2f"></div>未提出</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1a1208"></div>欠席</div>
     </div>
@@ -508,18 +550,42 @@
   </div>
 </div>
 
+<!-- 点数入力モーダル -->
+<div class="score-overlay" id="scoreOverlay">
+  <div class="score-box">
+    <div class="score-who" id="scoreWho"></div>
+    <div class="score-current" id="scoreCurrent">─</div>
+    <div class="score-tens" id="scoreTens"></div>
+    <div class="score-adj-row">
+      <button class="score-adj-btn" onclick="adjScore(-1)">－</button>
+      <div class="score-adj-val" id="scoreAdjVal">0</div>
+      <button class="score-adj-btn" onclick="adjScore(+1)">＋</button>
+    </div>
+    <div class="score-btns">
+      <button class="score-cancel" onclick="closeScore()">キャンセル</button>
+      <button class="score-clear"  onclick="clearScore()">消去</button>
+      <button class="score-ok"     onclick="saveScore()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 評価選択ポップアップ -->
 <div class="sb-eval-overlay" id="sbEvalOverlay">
   <div class="sb-eval-box">
     <div class="sb-eval-who" id="sbEvalWho"></div>
     <div id="sbRubricArea"></div>
-    <div class="sb-eval-grid">
-      <button class="sb-eval-btn ev-A"    onclick="setSbGrade('A')">A</button>
-      <button class="sb-eval-btn ev-Bp"   onclick="setSbGrade('Bp')">B+</button>
-      <button class="sb-eval-btn ev-B"    onclick="setSbGrade('B')">B</button>
-      <button class="sb-eval-btn ev-C"    onclick="setSbGrade('C')">C</button>
-      <button class="sb-eval-btn ev-none" style="grid-column:1/-1" onclick="setSbGrade('')">未提出に戻す</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+      <button class="sb-eval-btn ev-A"  onclick="setSbGrade('A')">A</button>
+      <button class="sb-eval-btn ev-Bp" onclick="setSbGrade('Bp')">B+</button>
     </div>
+    <div style="margin-bottom:6px;">
+      <button class="sb-eval-btn ev-B" style="width:100%;box-shadow:2px 2px 0 var(--ink);" onclick="setSbGrade('B')">B（基準）</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <button class="sb-eval-btn ev-Bm" onclick="setSbGrade('Bm')">B−</button>
+      <button class="sb-eval-btn ev-C"  onclick="setSbGrade('C')">C</button>
+    </div>
+    <button class="sb-eval-cancel" style="margin-bottom:8px;" onclick="setSbGrade('')">未提出に戻す</button>
     <button class="sb-eval-cancel" onclick="closeSbEval()">キャンセル</button>
   </div>
 </div>
@@ -610,14 +676,21 @@
 <div class="sb-add-overlay" id="sbAddOverlay">
   <div class="sb-add-box">
     <div class="sb-add-title">📋 提出物を追加</div>
-    <div class="sb-add-sub">① 教科を選ぶ（任意）</div>
+    <div class="sb-add-sub">① 種類を選ぶ</div>
+    <div class="sb-type-sel">
+      <button class="sb-type-btn sel" id="sbTypeGrade" onclick="selectSbType('grade')">📊 評価（A/B+/B/C）</button>
+      <button class="sb-type-btn"     id="sbTypeScore" onclick="selectSbType('score')">🔢 点数（漢字テストなど）</button>
+    </div>
+    <div class="sb-add-sub">② 教科を選ぶ（任意）</div>
     <div class="sb-subj-sel" id="sbSubjSel"></div>
-    <div class="sb-add-sub" style="margin-top:8px">② 内容を入力</div>
+    <div class="sb-add-sub" style="margin-top:8px">③ 内容を入力</div>
     <div class="sb-inp-row">
       <input class="sb-inp" type="text" id="sbNewName" maxlength="16" placeholder="例：ふりかえり、ノート">
     </div>
-    <div class="sb-add-sub" style="margin-top:8px">③ 観点を選ぶ</div>
-    <div class="sb-kan-sel" id="sbKanSel"></div>
+    <div id="sbKanArea">
+      <div class="sb-add-sub" style="margin-top:8px">④ 観点を選ぶ</div>
+      <div class="sb-kan-sel" id="sbKanSel"></div>
+    </div>
     <button class="sb-inp-ok" style="width:100%;height:46px;margin-bottom:8px;font-size:15px;" onclick="addSbSession()">決定</button>
     <button class="sb-cancel-btn" onclick="closeSbAdd()">キャンセル</button>
   </div>
@@ -793,28 +866,41 @@ const HW_NONE=0,HW_SUB=1,HW_ABS=2;
 // 提出物評価サイクル: 0=未チェック→B→B+→A→C→未提出→欠席→B…
 // 格納値: ''=未, 'B','Bp','A','C','none','abs'
 const SB_CYCLE=['B','Bp','A','C']; // タップはB→B+→A→C→Bのみ
+// 点数色区分: 100=紺、80-90=緑、60-70=黄、0-50=橙
+function scoreClass(s){
+  if(s===null||s===undefined||s==='')return'';
+  if(s==='abs')return'sc-abs';
+  const n=+s;
+  if(n===100)return'sc-100';
+  if(n>=80)return'sc-hi';
+  if(n>=60)return'sc-mid';
+  return'sc-lo';
+}
 const SB_KAN=['知識技能','思考判断','主体態度'];
 const SB_RUBRIC={
   '知識技能':[
     {g:'A', desc:'正確＋応用・発展あり（例の追加、別の方法、丁寧な図解など）', memo:'教えてないことまでやってる'},
     {g:'B+',desc:'正確。表現や記録に丁寧さ・工夫が見える',                memo:'きちんとやってる'},
     {g:'B', desc:'おおむね書けている・できている',                      memo:'最低限OK'},
+    {g:'B-',desc:'一部できているが抜け・誤りが目立つ。取り組んではいる',       memo:'やってはいる'},
     {g:'C', desc:'内容に大きな抜け・誤り／取り組んだ形跡が薄い',            memo:'声をかけたい'},
   ],
   '思考判断':[
     {g:'A', desc:'「なぜ」「どうして」が自分の言葉で書かれ、比較・関連づけ・具体例あり', memo:'読んで"おっ"と思う'},
     {g:'B+',desc:'理由や根拠あり。「〜だから」「〜と比べて」など思考の筋が見える',     memo:'考えた跡がある'},
     {g:'B', desc:'考えや気づきは書いてあるが、短い・表面的',                    memo:'書いてはいる'},
+    {g:'B-',desc:'考えは書いてあるが問いとズレている、または感想のみ',             memo:'方向がズレてる'},
     {g:'C', desc:'自分の考えの記述がない／問いに答えていない',                   memo:'白紙orズレてる'},
   ],
   '主体態度':[
     {g:'A', desc:'自分の変化や課題に気づき、次の行動につなげている（「次は〜したい」など）', memo:'自分で回せている'},
     {g:'B+',desc:'振り返りが具体的。できた・できなかったが自分の言葉で書けている',       memo:'ちゃんと振り返ってる'},
     {g:'B', desc:'振り返り欄・感想欄が埋まっている',                             memo:'埋めた'},
+    {g:'B-',desc:'振り返りはあるが「楽しかった」など感想のみ。思考の跡がない',          memo:'やってはいる'},
     {g:'C', desc:'未記入／「なし」「ふつう」のみ／取り組みの姿勢が見られない',           memo:'介入が必要'},
   ],
 };
-const SB_LABEL={'B':'B','Bp':'B+','A':'A','C':'C','none':'未','abs':'欠'};
+const SB_LABEL={'B':'B','Bp':'B+','Bm':'B-','A':'A','C':'C','none':'未','abs':'欠'};
 const KEY_WH='cc_wh_v1'; // {'YYYY-MM-DD':{'typeId':{'1':state,...},...}}
 const KEY_WH_TYPES='cc_wh_types_v1'; // [{id,name},...]
 const MODES={
@@ -1037,33 +1123,63 @@ function buildGrid(){
         grid.appendChild(btn);
       });
     } else {
-      const grades=sess.grades||{};
-      // 今日の宿題欠席情報を取得
       const hwDay=(ls.get(KEY_HW,{})[today()])||{};
-      let bc=0,bpc=0,ac=0,cc=0,nc=0,absc=0;
-      for(let i=1;i<=TOTAL;i++){
-        const g=grades[i]||'';
-        if(g==='B')bc++;else if(g==='Bp')bpc++;else if(g==='A')ac++;else if(g==='C')cc++;else if(g==='none')nc++;else if(g==='abs')absc++;
-      }
-      info=`<b style="color:#1d6638">B:${bc}</b> <b style="color:#1a5fa0">B+:${bpc}</b> <b style="color:#7b3fa0">A:${ac}</b> <b style="color:#bf5000">C:${cc}</b> 未:${nc} 欠:${absc}`;
+      const isScore=sess.type==='score';
       const sbYesNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
-      sbYesNums.forEach(i=>{
-        if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
-        const btn=makeBtnOrEmpty(i);
-        const g=grades[i]||'';
-        const isHwAbs=(hwDay[i]===HW_ABS);
-        if(editMode){
-          btn.classList.add('edit-ready');
-        } else if(g==='A'){btn.classList.add('sb-A');const b=el('span','sb-badge');b.textContent='A';btn.appendChild(b);}
-        else if(g==='Bp'){btn.classList.add('sb-Bp');const b=el('span','sb-badge');b.textContent='B+';btn.appendChild(b);}
-        else if(g==='B'){btn.classList.add('sb-B');const b=el('span','sb-badge');b.textContent='B';btn.appendChild(b);}
-        else if(g==='C'){btn.classList.add('sb-C');const b=el('span','sb-badge');b.textContent='C';btn.appendChild(b);}
-        else if(g==='none'){btn.classList.add('sb-none');addSub(btn,'未提出');}
-        else if(g==='abs'){btn.classList.add('sb-abs');addSub(btn,'欠席');}
-        else if(isHwAbs){btn.classList.add('sb-abs');addSub(btn,'欠席(自動)');}
-        btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleSb(i);});
-        grid.appendChild(btn);
-      });
+
+      if(isScore){
+        // 点数型
+        const scores=sess.scores||{};
+        let entered=0,absc=0,total=0;
+        for(let i=1;i<=TOTAL;i++){
+          const s=scores[i];
+          if(s==='abs')absc++;
+          else if(s!==null&&s!==undefined&&s!==''){entered++;total+=+s;}
+        }
+        const avg=entered?Math.round(total/entered*10)/10:'─';
+        info=`入力済 <b>${entered}</b> ／ 欠席 <b style="color:#888">${absc}</b> ／ 平均 <b style="color:#1a3a6b">${avg}</b>点`;
+        sbYesNums.forEach(i=>{
+          if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+          const btn=makeBtnOrEmpty(i);
+          const s=scores[i];
+          const isHwAbs=hwDay[i]===HW_ABS;
+          if(editMode){btn.classList.add('edit-ready');}
+          else if(s==='abs'||isHwAbs){btn.classList.add('sc-abs');addSub(btn,'欠席');}
+          else if(s!==null&&s!==undefined&&s!==''){
+            const cls=scoreClass(s);if(cls)btn.classList.add(cls);
+            const sl=el('span','sc-score-label');sl.textContent=s+'点';btn.appendChild(sl);
+          }
+          btn.addEventListener('click',()=>{if(editMode)openNe(i);else openScore(i);});
+          grid.appendChild(btn);
+        });
+      } else {
+        // 評価型（従来）
+        const grades=sess.grades||{};
+        let bc=0,bpc=0,bmc=0,ac=0,cc=0,nc=0,absc=0;
+        for(let i=1;i<=TOTAL;i++){
+          const g=grades[i]||'';
+          if(g==='B')bc++;else if(g==='Bp')bpc++;else if(g==='Bm')bmc++;else if(g==='A')ac++;else if(g==='C')cc++;else if(g==='none')nc++;else if(g==='abs')absc++;
+        }
+        info=`<b style="color:#c0392b">A:${ac}</b> <b style="color:#1a5fa0">B+:${bpc}</b> <b style="color:#0f5a2e">B:${bc}</b> <b style="color:#0096a0">B-:${bmc}</b> <b style="color:#c89800">C:${cc}</b> 未:${nc} 欠:${absc}`;
+        sbYesNums.forEach(i=>{
+          if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
+          const btn=makeBtnOrEmpty(i);
+          const g=grades[i]||'';
+          const isHwAbs=(hwDay[i]===HW_ABS);
+          if(editMode){
+            btn.classList.add('edit-ready');
+          } else if(g==='A'){btn.classList.add('sb-A');const b=el('span','sb-badge');b.textContent='A';btn.appendChild(b);}
+          else if(g==='Bp'){btn.classList.add('sb-Bp');const b=el('span','sb-badge');b.textContent='B+';btn.appendChild(b);}
+          else if(g==='B'){btn.classList.add('sb-B');const b=el('span','sb-badge');b.textContent='B';btn.appendChild(b);}
+          else if(g==='Bm'){btn.classList.add('sb-Bm');const b=el('span','sb-badge');b.textContent='B-';btn.appendChild(b);}
+          else if(g==='C'){btn.classList.add('sb-C');const b=el('span','sb-badge');b.style.color='#1a1208';b.textContent='C';btn.appendChild(b);}
+          else if(g==='none'){btn.classList.add('sb-none');addSub(btn,'未提出');}
+          else if(g==='abs'){btn.classList.add('sb-abs');addSub(btn,'欠席');}
+          else if(isHwAbs){btn.classList.add('sb-abs');addSub(btn,'欠席(自動)');}
+          btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleSb(i);});
+          grid.appendChild(btn);
+        });
+      }
     }
   }
   document.getElementById('statusBar').innerHTML=info;
@@ -1192,52 +1308,93 @@ function toggleSh(n){
 }
 
 /* ══ 提出物 ══ */
-function getSbDay(){
-  const data=ls.get(KEY_SB,{});const t=today();
+function getSbDay(dateKey){
+  // dateKeyを省略すると今日
+  const t=dateKey||today();
+  const data=ls.get(KEY_SB,{});
   if(!data[t])data[t]={sessions:[]};
   return data[t];
 }
+function getSbAllActive(){
+  // 全日付から未完結セッションを収集（新しい日付順）
+  const data=ls.get(KEY_SB,{});
+  const result=[];
+  Object.keys(data).sort().reverse().forEach(dateKey=>{
+    (data[dateKey].sessions||[]).forEach(sess=>{
+      if(!sess.closed) result.push({sess,dateKey});
+    });
+  });
+  return result;
+}
 function getSbSession(){
   if(!sbSession)return null;
-  const day=getSbDay();
-  return day.sessions.find(s=>s.id===sbSession)||null;
+  const data=ls.get(KEY_SB,{});
+  for(const dateKey of Object.keys(data)){
+    const found=(data[dateKey].sessions||[]).find(s=>s.id===sbSession);
+    if(found)return found;
+  }
+  return null;
 }
-function saveSbDay(day){
-  const data=ls.get(KEY_SB,{});data[today()]=day;ls.set(KEY_SB,data);
+function getSbSessionDateKey(){
+  if(!sbSession)return today();
+  const data=ls.get(KEY_SB,{});
+  for(const dateKey of Object.keys(data)){
+    const found=(data[dateKey].sessions||[]).find(s=>s.id===sbSession);
+    if(found)return dateKey;
+  }
+  return today();
+}
+function saveSbDay(day, dateKey){
+  const t=dateKey||today();
+  const data=ls.get(KEY_SB,{});data[t]=day;ls.set(KEY_SB,data);
+}
+function saveSbSessionInPlace(sess){
+  // セッションをその作成日のデータに保存
+  const dateKey=getSbSessionDateKey();
+  const data=ls.get(KEY_SB,{});
+  if(!data[dateKey])data[dateKey]={sessions:[]};
+  const si=data[dateKey].sessions.findIndex(s=>s.id===sess.id);
+  if(si>=0)data[dateKey].sessions[si]=sess;
+  ls.set(KEY_SB,data);
 }
 
 // セッションタブ描画
 function renderSbToolbar(){
-  const day=getSbDay();const row=document.getElementById('sbTabRow');row.innerHTML='';
-  // 完結済みを除いた未完結セッションのみ表示
-  const activeSessions=day.sessions.filter(s=>!s.closed);
-  activeSessions.forEach(sess=>{
+  const allActive=getSbAllActive(); // [{sess,dateKey}]
+  const row=document.getElementById('sbTabRow');row.innerHTML='';
+  allActive.forEach(({sess,dateKey})=>{
     const tab=el('button','sb-session-tab');
     if(sess.id===sbSession)tab.classList.add('act');
-    tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'');
+    // 作成日が今日でない場合は日付バッジを表示
+    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
+    tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
+    tab.title=`作成日: ${fmtShort(dateKey)}`;
     tab.addEventListener('click',()=>{sbSession=sess.id;renderSbToolbar();buildGrid();});
-    // 長押しでアクションシート
     let pressTimer;
     tab.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>openSbAction(sess.id),600);});
     tab.addEventListener('pointerup',()=>clearTimeout(pressTimer));
     tab.addEventListener('pointerleave',()=>clearTimeout(pressTimer));
     row.appendChild(tab);
   });
-  // 追加ボタン
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
   addBtn.addEventListener('click',openSbAdd);
   row.appendChild(addBtn);
   // アクティブセッションが完結済みになっていたら別のに切り替え
-  if(sbSession&&!activeSessions.find(s=>s.id===sbSession)){
-    sbSession=activeSessions.length?activeSessions[activeSessions.length-1].id:null;
+  const activeIds=allActive.map(x=>x.sess.id);
+  if(sbSession&&!activeIds.includes(sbSession)){
+    sbSession=allActive.length?allActive[0].sess.id:null;
   }
 }
 
 function removeSbSession(id){
-  const day=getSbDay();
-  day.sessions=day.sessions.filter(s=>s.id!==id);
-  if(sbSession===id){const act=day.sessions.filter(s=>!s.closed);sbSession=act.length?act[act.length-1].id:null;}
-  saveSbDay(day);renderSbToolbar();buildGrid();
+  const data=ls.get(KEY_SB,{});
+  Object.keys(data).forEach(dk=>{
+    data[dk].sessions=(data[dk].sessions||[]).filter(s=>s.id!==id);
+  });
+  ls.set(KEY_SB,data);
+  const allActive=getSbAllActive();
+  if(sbSession===id)sbSession=allActive.length?allActive[0].sess.id:null;
+  renderSbToolbar();buildGrid();
 }
 
 /* セッションアクションシート */
@@ -1265,6 +1422,10 @@ function completeSbSession(){
   Object.keys(sess.grades||{}).forEach(n=>{
     if(sess.grades[n]==='abs')sess.grades[n]='none';
   });
+  // 点数型の欠席も消去
+  Object.keys(sess.scores||{}).forEach(n=>{
+    if(sess.scores[n]==='abs')delete sess.scores[n];
+  });
   sess.closed=true;
   // 宿題タブの自動abs連携も解除（完結後は独立）
   saveSbDay(day);
@@ -1288,8 +1449,19 @@ function deleteSbSessionAction(){
 // セッション追加モーダル
 const SB_SUBJECTS=['国語','算数','理科','社会','体育','その他'];
 let sbSelectedSubj='';
+function selectSbType(type){
+  sbSessionType=type;
+  document.getElementById('sbTypeGrade').classList.toggle('sel',type==='grade');
+  document.getElementById('sbTypeScore').classList.toggle('sel',type==='score');
+  // 点数型は観点不要
+  document.getElementById('sbKanArea').style.display=type==='grade'?'block':'none';
+  if(type==='score') sbSelectedKan='';
+  // placeholder変更
+  document.getElementById('sbNewName').placeholder=type==='score'?'例：漢字テスト、計算テスト':'例：ふりかえり、ノート';
+}
 function openSbAdd(){
-  sbSelectedSubj='';sbSelectedKan='';
+  sbSelectedSubj='';sbSelectedKan='';sbSessionType='grade';
+  selectSbType('grade');
   // 教科ボタン
   const sel=document.getElementById('sbSubjSel');sel.innerHTML='';
   SB_SUBJECTS.forEach(s=>{
@@ -1335,7 +1507,7 @@ function addSbSession(){
   const hwDay=(ls.get(KEY_HW,{})[today()])||{};
   const grades={};
   for(let i=1;i<=TOTAL;i++){if(hwDay[i]===HW_ABS)grades[i]='abs';}
-  day.sessions.push({id,name,kan:sbSelectedKan,grades});
+  day.sessions.push({id,name,kan:sbSelectedKan,type:sbSessionType,grades,scores:{}});
   sbSession=id;
   saveSbDay(day);closeSbAdd();renderSbToolbar();buildGrid();
   showToast(`「${name}」を追加しました`);
@@ -1344,20 +1516,69 @@ function addSbSession(){
 // 評価サイクル
 let sbEvalTarget=null;
 let sbSelectedKan='';
+let sbSessionType='grade'; // 'grade' or 'score'
+let scoreTarget=null;
+let scoreTmp=null; // 編集中の点数
+
+/* ── 点数入力 ── */
+function openScore(n){
+  scoreTarget=n;
+  const sess=getSbSession();
+  const scores=sess?.scores||{};
+  const cur=scores[n];
+  // 現在の点数をscrTmpに設定
+  if(cur==='abs'||cur===null||cur===undefined||cur==='') scoreTmp=null;
+  else scoreTmp=+cur;
+
+  const names=ls.get(KEY_NAMES,{});
+  const nameStr=names[n]?`${n}番（${names[n]}）`:`${n}番`;
+  document.getElementById('scoreWho').textContent=nameStr;
+  renderScoreModal();
+  document.getElementById('scoreOverlay').classList.add('open');
+}
+function renderScoreModal(){
+  // 現在値表示
+  document.getElementById('scoreCurrent').textContent=scoreTmp!==null?scoreTmp+'点':'未入力';
+  document.getElementById('scoreAdjVal').textContent=scoreTmp!==null?scoreTmp:'─';
+  // 10刻みボタン
+  const tens=document.getElementById('scoreTens');tens.innerHTML='';
+  [0,10,20,30,40,50,60,70,80,90,100].forEach(v=>{
+    const b=el('button','score-ten-btn');b.textContent=v;
+    if(scoreTmp===v)b.classList.add('sel');
+    b.addEventListener('click',()=>{scoreTmp=v;renderScoreModal();});
+    tens.appendChild(b);
+  });
+}
+function adjScore(delta){
+  if(scoreTmp===null)scoreTmp=0;
+  scoreTmp=Math.max(0,Math.min(100,scoreTmp+delta));
+  renderScoreModal();
+}
+function clearScore(){scoreTmp=null;renderScoreModal();}
+function closeScore(){document.getElementById('scoreOverlay').classList.remove('open');scoreTarget=null;scoreTmp=null;}
+function saveScore(){
+  if(scoreTarget===null)return;
+  const sess=getSbSession();if(!sess)return;
+  if(!sess.scores)sess.scores={};
+  if(scoreTmp===null)delete sess.scores[scoreTarget];
+  else sess.scores[scoreTarget]=scoreTmp;
+  saveSbSessionInPlace(sess);closeScore();buildGrid();
+}
 
 function cycleSb(n){
   const sess=getSbSession();if(!sess)return;
   const cur=sess.grades[n]||'';
-  if(cur==='abs')return; // 欠席者はタップ不可
 
   if(cur===''){
     // 未評価 → B にセット
     saveSbGrade(n,'B');
-  } else if(cur==='B'){
-    // B状態 → 評価選択ポップアップ（変更or未提出に戻す）
+  } else if(cur==='abs'){
+    // 提出日欠席 → 評価画面を開いて後日評価可能
+    openSbEval(n);
+  } else {
+    // 評価済み → 評価画面で変更
     openSbEval(n);
   }
-  // B以外（B+/A/C）はタップ無反応（評価ポップアップ経由でのみ変更可）
 }
 
 function openSbEval(n){
@@ -1680,10 +1901,18 @@ function downloadCSV(keys){
       else if(kind==='sh'){row.push((sh[k]?.given||[]).includes(i)?'○':'');}
       else if(kind==='mm'){const t=(mm[k]?.[i]||'').trim().replace(/\n/g,' / ');row.push(cc(t));}
       else if(kind==='sb'){
-        const g=sess.grades?.[i]||'';
-        const hwDay=(hw[k]||{});
-        const eff=g||(hwDay[i]===HW_ABS?'abs':'');
-        row.push(eff?SB_LABEL[eff]||eff:'');
+        if(sess.type==='score'){
+          const s=sess.scores?.[i];
+          const hwDay=(hw[k]||{});
+          if(s==='abs'||(s===undefined&&hwDay[i]===HW_ABS))row.push('欠');
+          else if(s!==null&&s!==undefined&&s!=='')row.push(String(s));
+          else row.push('');
+        } else {
+          const g=sess.grades?.[i]||'';
+          const hwDay=(hw[k]||{});
+          const eff=g||(hwDay[i]===HW_ABS?'abs':'');
+          row.push(eff?SB_LABEL[eff]||eff:'');
+        }
       }
     });
     csv+=row.join(',')+"\n";
@@ -1977,7 +2206,7 @@ function closeHelp(){document.getElementById('helpOverlay').classList.remove('op
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 /* モーダル外タップ */
-[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp]].forEach(([id,fn])=>{
+[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp],['scoreOverlay',closeScore]].forEach(([id,fn])=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fn();});
 });
 document.getElementById('neInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNeName();});
