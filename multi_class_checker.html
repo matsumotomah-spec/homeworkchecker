@@ -59,18 +59,22 @@
   .num-btn.seat-empty .btn-num{color:var(--grid-line);}
 
   /* 評価状態 */
-  .num-btn.sb-A{background:#7b3fa0;border-color:#7b3fa0;box-shadow:none;}
+  /* A:赤 B+:青 B:深緑 B-:水色 C:黄（赤緑色盲対応） */
+  .num-btn.sb-A{background:#c0392b;border-color:#c0392b;box-shadow:none;}
   .num-btn.sb-A .btn-num{color:#fff;} .num-btn.sb-A .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-A .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-A .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
   .num-btn.sb-Bp{background:#1a5fa0;border-color:#1a5fa0;box-shadow:none;}
   .num-btn.sb-Bp .btn-num{color:#fff;} .num-btn.sb-Bp .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-Bp .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-Bp .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
-  .num-btn.sb-B{background:#1d6638;border-color:#1d6638;box-shadow:none;}
+  .num-btn.sb-B{background:#0f5a2e;border-color:#0f5a2e;box-shadow:none;}
   .num-btn.sb-B .btn-num{color:#fff;} .num-btn.sb-B .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-B .btn-name{color:rgba(255,255,255,.9);}
   .num-btn.sb-B .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
-  .num-btn.sb-C{background:#bf5000;border-color:#bf5000;box-shadow:none;}
-  .num-btn.sb-C .btn-num{color:#fff;} .num-btn.sb-C .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-C .btn-name{color:rgba(255,255,255,.9);}
-  .num-btn.sb-C .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
+  .num-btn.sb-Bm{background:#0096a0;border-color:#0096a0;box-shadow:none;}
+  .num-btn.sb-Bm .btn-num{color:#fff;} .num-btn.sb-Bm .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.sb-Bm .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.sb-Bm .btn-sub{color:rgba(255,255,255,.85);font-weight:700;}
+  .num-btn.sb-C{background:#d4a800;border-color:#d4a800;box-shadow:none;}
+  .num-btn.sb-C .btn-num{color:#1a1208;} .num-btn.sb-C .btn-num.small{color:rgba(26,18,8,.6);} .num-btn.sb-C .btn-name{color:#1a1208;}
+  .num-btn.sb-C .btn-sub{color:rgba(26,18,8,.7);font-weight:700;}
   .num-btn.sb-none{border-color:#c84b2f;box-shadow:3px 3px 0 #c84b2f;}
   .num-btn.sb-none .btn-sub{color:#c84b2f;font-weight:700;}
   .num-btn.sb-abs{background:#1a1208;border-color:#1a1208;box-shadow:none;}
@@ -128,10 +132,11 @@
   .eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
   .eval-btn{height:52px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:16px;font-weight:900;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .eval-btn:active{opacity:.8;}
-  .ev-A{background:#7b3fa0;color:white;border-color:#7b3fa0;}
+  .ev-A{background:#c0392b;color:white;border-color:#c0392b;}
   .ev-Bp{background:#1a5fa0;color:white;border-color:#1a5fa0;}
-  .ev-B{background:#1d6638;color:white;border-color:#1d6638;}
-  .ev-C{background:#bf5000;color:white;border-color:#bf5000;}
+  .ev-B{background:#0f5a2e;color:white;border-color:#0f5a2e;}
+  .ev-Bm{background:#0096a0;color:white;border-color:#0096a0;}
+  .ev-C{background:#d4a800;color:#1a1208;border-color:#c89800;}
   .ev-none{background:var(--paper);color:#c84b2f;border-color:#c84b2f;}
   .eval-cancel{width:100%;height:40px;border:2px solid var(--ink-light);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-light);}
 
@@ -215,8 +220,8 @@
   <div class="sb-legend">
     <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1d6638"></div>B</div>
     <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1a5fa0"></div>B+</div>
-    <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#7b3fa0"></div>A</div>
-    <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#bf5000"></div>C</div>
+    <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#c0392b"></div>A</div>
+    <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#d4a800"></div>C</div>
     <div class="sb-leg-item"><div class="sb-leg-dot" style="background:var(--paper);border:1.5px solid #c84b2f"></div>未</div>
     <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#1a1208"></div>欠</div>
   </div>
@@ -253,13 +258,18 @@
   <div class="eval-box">
     <div class="eval-who" id="evalWho"></div>
     <div id="evalRubricArea"></div>
-    <div class="eval-grid">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
       <button class="eval-btn ev-A"  onclick="setGrade('A')">A</button>
       <button class="eval-btn ev-Bp" onclick="setGrade('Bp')">B+</button>
-      <button class="eval-btn ev-B"  onclick="setGrade('B')">B</button>
-      <button class="eval-btn ev-C"  onclick="setGrade('C')">C</button>
-      <button class="eval-btn ev-none" style="grid-column:1/-1" onclick="setGrade('')">未提出に戻す</button>
     </div>
+    <div style="margin-bottom:6px;">
+      <button class="eval-btn ev-B" style="width:100%;" onclick="setGrade('B')">B（基準）</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <button class="eval-btn ev-Bm" onclick="setGrade('Bm')">B−</button>
+      <button class="eval-btn ev-C"  onclick="setGrade('C')">C</button>
+    </div>
+    <button class="eval-cancel" style="margin-bottom:8px;" onclick="setGrade('')">未提出に戻す</button>
     <button class="eval-cancel" onclick="closeEval()">キャンセル</button>
   </div>
 </div>
@@ -328,27 +338,30 @@
 /* ════ 定数 ════ */
 const WEEKDAYS=['日','月','火','水','木','金','土'];
 const CLASS_IDS=['A','B','C'];
-const SB_CYCLE=['B','Bp','A','C'];
-const SB_LABEL={B:'B',Bp:'B+',A:'A',C:'C',none:'未',abs:'欠'};
+const SB_CYCLE=['B','Bp','A','Bm','C'];
+const SB_LABEL={B:'B',Bp:'B+',Bm:'B-',A:'A',C:'C',none:'未',abs:'欠'};
 const SB_KAN=['知識技能','思考判断','主体態度'];
 const SB_RUBRIC={
   '知識技能':[
-    {g:'A',desc:'正確＋応用・発展あり（例の追加、別の方法、丁寧な図解など）',memo:'教えてないことまでやってる'},
-    {g:'B+',desc:'正確。表現や記録に丁寧さ・工夫が見える',memo:'きちんとやってる'},
-    {g:'B',desc:'おおむね書けている・できている',memo:'最低限OK'},
-    {g:'C',desc:'内容に大きな抜け・誤り／取り組んだ形跡が薄い',memo:'声をかけたい'},
+    {g:'A', desc:'正確＋応用・発展あり（例の追加、別の方法、丁寧な図解など）',memo:'教えてないことまでやってる'},
+    {g:'B+',desc:'正確。表現や記録に丁寧さ・工夫が見える',               memo:'きちんとやってる'},
+    {g:'B', desc:'おおむね書けている・できている',                     memo:'最低限OK'},
+    {g:'B-',desc:'一部できているが抜け・誤りが目立つ。取り組んではいる',      memo:'やってはいる'},
+    {g:'C', desc:'内容に大きな抜け・誤り／取り組んだ形跡が薄い',           memo:'声をかけたい'},
   ],
   '思考判断':[
-    {g:'A',desc:'「なぜ」「どうして」が自分の言葉で書かれ、比較・関連づけ・具体例あり',memo:'読んで"おっ"と思う'},
-    {g:'B+',desc:'理由や根拠あり。「〜だから」「〜と比べて」など思考の筋が見える',memo:'考えた跡がある'},
-    {g:'B',desc:'考えや気づきは書いてあるが、短い・表面的',memo:'書いてはいる'},
-    {g:'C',desc:'自分の考えの記述がない／問いに答えていない',memo:'白紙orズレてる'},
+    {g:'A', desc:'「なぜ」「どうして」が自分の言葉で書かれ、比較・関連づけ・具体例あり',memo:'読んで"おっ"と思う'},
+    {g:'B+',desc:'理由や根拠あり。「〜だから」「〜と比べて」など思考の筋が見える',    memo:'考えた跡がある'},
+    {g:'B', desc:'考えや気づきは書いてあるが、短い・表面的',                   memo:'書いてはいる'},
+    {g:'B-',desc:'考えは書いてあるが問いとズレている、または感想のみ',            memo:'方向がズレてる'},
+    {g:'C', desc:'自分の考えの記述がない／問いに答えていない',                  memo:'白紙orズレてる'},
   ],
   '主体態度':[
-    {g:'A',desc:'自分の変化や課題に気づき、次の行動につなげている',memo:'自分で回せている'},
-    {g:'B+',desc:'振り返りが具体的。できた・できなかったが自分の言葉で書けている',memo:'ちゃんと振り返ってる'},
-    {g:'B',desc:'振り返り欄・感想欄が埋まっている',memo:'埋めた'},
-    {g:'C',desc:'未記入／「なし」「ふつう」のみ／取り組みの姿勢が見られない',memo:'介入が必要'},
+    {g:'A', desc:'自分の変化や課題に気づき、次の行動につなげている（「次は〜したい」など）',memo:'自分で回せている'},
+    {g:'B+',desc:'振り返りが具体的。できた・できなかったが自分の言葉で書けている',      memo:'ちゃんと振り返ってる'},
+    {g:'B', desc:'振り返り欄・感想欄が埋まっている',                            memo:'埋めた'},
+    {g:'B-',desc:'振り返りはあるが「楽しかった」など感想のみ。思考の跡がない',         memo:'やってはいる'},
+    {g:'C', desc:'未記入／「なし」「ふつう」のみ／取り組みの姿勢が見られない',          memo:'介入が必要'},
   ],
 };
 const SB_SUBJECTS=['国語','算数','理科','社会','体育','その他'];
@@ -417,35 +430,69 @@ function renderClassTabs(){
 function switchClass(id){
   classId=id;
   // セッションをそのクラスの最後のアクティブに
-  const day=getSbDay();
-  const active=day.sessions.filter(s=>!s.closed);
-  session=active.length?active[active.length-1].id:null;
+  const allActive=getSbAllActive();
+  session=allActive.length?allActive[0].sess.id:null;
   renderClassTabs();
   renderSbToolbar();
   buildGrid();
 }
 
 /* ════ 提出物データ ════ */
-function getSbDay(){
-  const data=ls.get(KEY_SB(classId),{});const t=today();
+function getSbDay(dateKey){
+  const t=dateKey||today();
+  const data=ls.get(KEY_SB(classId),{});
   if(!data[t])data[t]={sessions:[]};
   return data[t];
 }
-function saveSbDay(day){
-  const data=ls.get(KEY_SB(classId),{});data[today()]=day;ls.set(KEY_SB(classId),data);
+function saveSbDay(day,dateKey){
+  const t=dateKey||today();
+  const data=ls.get(KEY_SB(classId),{});data[t]=day;ls.set(KEY_SB(classId),data);
+}
+function getSbAllActive(){
+  const data=ls.get(KEY_SB(classId),{});
+  const result=[];
+  Object.keys(data).sort().reverse().forEach(dateKey=>{
+    (data[dateKey].sessions||[]).forEach(sess=>{
+      if(!sess.closed) result.push({sess,dateKey});
+    });
+  });
+  return result;
 }
 function getSession(){
   if(!session)return null;
-  return getSbDay().sessions.find(s=>s.id===session)||null;
+  const data=ls.get(KEY_SB(classId),{});
+  for(const dk of Object.keys(data)){
+    const found=(data[dk].sessions||[]).find(s=>s.id===session);
+    if(found)return found;
+  }
+  return null;
+}
+function getSessionDateKey(){
+  if(!session)return today();
+  const data=ls.get(KEY_SB(classId),{});
+  for(const dk of Object.keys(data)){
+    const found=(data[dk].sessions||[]).find(s=>s.id===session);
+    if(found)return dk;
+  }
+  return today();
+}
+function saveSessionInPlace(sess){
+  const dateKey=getSessionDateKey();
+  const data=ls.get(KEY_SB(classId),{});
+  if(!data[dateKey])data[dateKey]={sessions:[]};
+  const si=data[dateKey].sessions.findIndex(s=>s.id===sess.id);
+  if(si>=0)data[dateKey].sessions[si]=sess;
+  ls.set(KEY_SB(classId),data);
 }
 
 /* ════ ツールバー ════ */
 function renderSbToolbar(){
-  const day=getSbDay();const row=document.getElementById('sbTabRow');row.innerHTML='';
-  const active=day.sessions.filter(s=>!s.closed);
-  active.forEach(sess=>{
+  const allActive=getSbAllActive();
+  const row=document.getElementById('sbTabRow');row.innerHTML='';
+  allActive.forEach(({sess,dateKey})=>{
     const tab=el('button','sb-session-tab'+(sess.id===session?' act':''));
-    tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'');
+    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
+    tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.addEventListener('click',()=>{session=sess.id;renderSbToolbar();buildGrid();});
     let pt;
     tab.addEventListener('pointerdown',()=>{pt=setTimeout(()=>openAction(sess.id),600);});
@@ -456,8 +503,9 @@ function renderSbToolbar(){
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
   addBtn.addEventListener('click',openAddOv);
   row.appendChild(addBtn);
-  if(session&&!active.find(s=>s.id===session)){
-    session=active.length?active[active.length-1].id:null;
+  const activeIds=allActive.map(x=>x.sess.id);
+  if(session&&!activeIds.includes(session)){
+    session=allActive.length?allActive[0].sess.id:null;
   }
 }
 
@@ -475,20 +523,21 @@ function buildGrid(){
     for(let i=1;i<=total;i++){grid.appendChild(makeBtn(i,names));}
   } else {
     const grades=sess.grades||{};
-    let bc=0,bpc=0,ac=0,cc=0,nc=0,absc=0;
+    let bc=0,bpc=0,bmc=0,ac=0,cc=0,nc=0,absc=0;
     for(let i=1;i<=total;i++){
       const g=grades[i]||'';
-      if(g==='B')bc++;else if(g==='Bp')bpc++;else if(g==='A')ac++;
-      else if(g==='C')cc++;else if(g==='none')nc++;else if(g==='abs')absc++;
+      if(g==='B')bc++;else if(g==='Bp')bpc++;else if(g==='Bm')bmc++;
+      else if(g==='A')ac++;else if(g==='C')cc++;else if(g==='none')nc++;else if(g==='abs')absc++;
     }
-    info=`<b style="color:#1d6638">B:${bc}</b> <b style="color:#1a5fa0">B+:${bpc}</b> <b style="color:#7b3fa0">A:${ac}</b> <b style="color:#bf5000">C:${cc}</b> 未:${nc} 欠:${absc}`;
+    info=`<b style="color:#c0392b">A:${ac}</b> <b style="color:#1a5fa0">B+:${bpc}</b> <b style="color:#0f5a2e">B:${bc}</b> <b style="color:#0096a0">B-:${bmc}</b> <b style="color:#c89800">C:${cc}</b> 未:${nc} 欠:${absc}`;
     for(let i=1;i<=total;i++){
       const btn=makeBtn(i,names);
       const g=grades[i]||'';
       if(g==='A'){btn.classList.add('sb-A');const b=el('span','sb-badge');b.textContent='A';btn.appendChild(b);}
       else if(g==='Bp'){btn.classList.add('sb-Bp');const b=el('span','sb-badge');b.textContent='B+';btn.appendChild(b);}
       else if(g==='B'){btn.classList.add('sb-B');const b=el('span','sb-badge');b.textContent='B';btn.appendChild(b);}
-      else if(g==='C'){btn.classList.add('sb-C');const b=el('span','sb-badge');b.textContent='C';btn.appendChild(b);}
+      else if(g==='Bm'){btn.classList.add('sb-Bm');const b=el('span','sb-badge');b.textContent='B-';btn.appendChild(b);}
+      else if(g==='C'){btn.classList.add('sb-C');const b=el('span','sb-badge');b.style.color='#1a1208';b.textContent='C';btn.appendChild(b);}
       else if(g==='none'){btn.classList.add('sb-none');addSub(btn,'未提出');}
       else if(g==='abs'){btn.classList.add('sb-abs');addSub(btn,'欠席');}
       btn.addEventListener('click',()=>tapBtn(i));
@@ -511,22 +560,19 @@ function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;
 function tapBtn(n){
   const sess=getSession();if(!sess)return;
   const cur=sess.grades[n]||'';
-  if(cur==='abs')return;
-  const now=Date.now();
-  const isDouble=(lastTap.n===n&&now-lastTap.t<600);
-  lastTap={n,t:now};
-  if(isDouble){openEval(n);}
-  else if(cur===''){saveGrade(n,'B');}
+  if(cur===''){
+    saveGrade(n,'B');
+  } else {
+    // 評価済み・欠席どちらもタップで評価画面（後日評価対応）
+    openEval(n);
+  }
 }
 
 /* ════ 評価保存 ════ */
 function saveGrade(n,grade){
   const sess=getSession();if(!sess)return;
   if(grade==='')delete sess.grades[n]; else sess.grades[n]=grade;
-  const day=getSbDay();
-  const si=day.sessions.findIndex(s=>s.id===session);
-  if(si>=0)day.sessions[si]=sess;
-  saveSbDay(day);buildGrid();
+  saveSessionInPlace(sess);buildGrid();
 }
 
 /* ════ 評価ポップアップ ════ */
@@ -536,7 +582,7 @@ function openEval(n){
   const cur=sess?.grades[n]||'';
   const names=getNames();
   const nameStr=names[n]?`${n}番（${names[n]}）`:`${n}番`;
-  const label=cur?`現在: ${SB_LABEL[cur]||cur}`:'未設定';
+  const label=cur==='abs'?'提出日欠席（後日提出）':cur?`現在: ${SB_LABEL[cur]||cur}`:'未設定';
   const kanStr=sess?.kan?` ／ ${sess.kan}`:'';
   document.getElementById('evalWho').textContent=nameStr+' — '+label+kanStr;
   // ルーブリック
@@ -545,7 +591,8 @@ function openEval(n){
     const t=el('div','rubric');
     const h=el('div','rubric-header');h.textContent=sess.kan+'の評価基準';t.appendChild(h);
     SB_RUBRIC[sess.kan].forEach(row=>{
-      const r=el('div','rubric-row r'+row.g);
+      const rkey=row.g.replace('+','p').replace('-','m');
+      const r=el('div','rubric-row r'+rkey);
       const g=el('div','rubric-grade');g.textContent=row.g;r.appendChild(g);
       const d=el('div','rubric-desc');d.textContent=row.desc;r.appendChild(d);
       const m=el('div','rubric-memo');m.textContent=row.memo;r.appendChild(m);
@@ -610,7 +657,10 @@ function addSession(){
 /* ════ アクションシート ════ */
 function openAction(id){
   actionTarget=id;
-  const sess=getSbDay().sessions.find(s=>s.id===id);if(!sess)return;
+  const data=ls.get(KEY_SB(classId),{});
+  let sess=null;
+  for(const dk of Object.keys(data)){sess=(data[dk].sessions||[]).find(s=>s.id===id);if(sess)break;}
+  if(!sess)return;
   const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
   document.getElementById('actionTitle').textContent=sess.name+(sess.kan?` [${sess.kan}]`:'');
   document.getElementById('actionSub').textContent=absCount>0?`欠席者${absCount}人 → 完結時に未提出へ変換`:'';
@@ -619,24 +669,33 @@ function openAction(id){
 function closeAction(){document.getElementById('actionOv').classList.remove('open');actionTarget=null;}
 function completeSession(){
   if(!actionTarget)return;
-  const day=getSbDay();
-  const sess=day.sessions.find(s=>s.id===actionTarget);if(!sess){closeAction();return;}
+  const data=ls.get(KEY_SB(classId),{});
+  let targetDk=null,sess=null;
+  for(const dk of Object.keys(data)){
+    const f=(data[dk].sessions||[]).find(s=>s.id===actionTarget);
+    if(f){targetDk=dk;sess=f;break;}
+  }
+  if(!sess){closeAction();return;}
   Object.keys(sess.grades||{}).forEach(n=>{if(sess.grades[n]==='abs')sess.grades[n]='none';});
   sess.closed=true;
-  saveSbDay(day);
-  const active=day.sessions.filter(s=>!s.closed);
-  if(session===actionTarget)session=active.length?active[active.length-1].id:null;
+  ls.set(KEY_SB(classId),data);
+  const allActive=getSbAllActive();
+  if(session===actionTarget)session=allActive.length?allActive[0].sess.id:null;
   closeAction();renderSbToolbar();buildGrid();showToast('完結しました');
 }
 function deleteSessionAction(){
   if(!actionTarget)return;
-  const sess=getSbDay().sessions.find(s=>s.id===actionTarget);if(!sess){closeAction();return;}
+  const data=ls.get(KEY_SB(classId),{});
+  let sess=null;
+  for(const dk of Object.keys(data)){sess=(data[dk].sessions||[]).find(s=>s.id===actionTarget);if(sess)break;}
+  if(!sess){closeAction();return;}
   if(!confirm(`「${sess.name}」を削除しますか？`))return;
   closeAction();
-  const day=getSbDay();
-  day.sessions=day.sessions.filter(s=>s.id!==actionTarget);
-  if(session===actionTarget){const a=day.sessions.filter(s=>!s.closed);session=a.length?a[a.length-1].id:null;}
-  saveSbDay(day);renderSbToolbar();buildGrid();
+  Object.keys(data).forEach(dk=>{data[dk].sessions=(data[dk].sessions||[]).filter(s=>s.id!==actionTarget);});
+  ls.set(KEY_SB(classId),data);
+  const allActive=getSbAllActive();
+  if(session===actionTarget)session=allActive.length?allActive[0].sess.id:null;
+  renderSbToolbar();buildGrid();
 }
 
 /* ════ 設定 ════ */
@@ -803,7 +862,7 @@ function openHistory(){
         if(!sessions.length)return;
         html+=`<div class="hist-cls">${getClassName(id)}</div>`;
         sessions.forEach(sess=>{
-          const gc={A:0,Bp:0,B:0,C:0,none:0,abs:0};
+          const gc={A:0,Bp:0,B:0,Bm:0,C:0,none:0,abs:0};
           const total=getMeta().totals[id]||30;
           for(let i=1;i<=total;i++){const g=sess.grades?.[i]||'';if(gc[g]!==undefined)gc[g]++;}
           const closed=sess.closed?' ✅':'';
