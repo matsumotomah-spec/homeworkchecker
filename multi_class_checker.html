@@ -496,27 +496,22 @@ function renderSbToolbar(){
   const allActive=getSbAllActive();
   const row=document.getElementById('sbTabRow');row.innerHTML='';
   allActive.forEach(({sess,dateKey})=>{
-    const wrap=el('div','sb-session-tab-wrap');
-    if(sess.id===session)wrap.classList.add('act');
-    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
     const tab=el('button','sb-session-tab');
+    if(sess.id===session)tab.classList.add('act');
+    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.addEventListener('click',()=>{session=sess.id;renderSbToolbar();buildGrid();});
-    const menuBtn=el('button','sb-session-menu-btn');
-    menuBtn.textContent='⋮';
-    menuBtn.title='完結・削除';
-    menuBtn.addEventListener('click',(e)=>{e.stopPropagation();openAction(sess.id);});
-    menuBtn.addEventListener('touchstart',(e)=>{e.preventDefault();openAction(sess.id);},{passive:false});
-    wrap.appendChild(tab);wrap.appendChild(menuBtn);
-    row.appendChild(wrap);
+    row.appendChild(tab);
   });
-  const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
+  const addBtn=el('button','sb-add-tab');addBtn.textContent='＋ 追加';
   addBtn.addEventListener('click',openAddOv);
   row.appendChild(addBtn);
   const activeIds=allActive.map(x=>x.sess.id);
   if(session&&!activeIds.includes(session)){
     session=allActive.length?allActive[0].sess.id:null;
   }
+  const ar=document.getElementById('sbActionRow');
+  ar.classList.toggle('visible', session!==null);
 }
 
 /* ════ グリッド ════ */
@@ -665,18 +660,35 @@ function addSession(){
 }
 
 /* ════ アクションシート ════ */
-function openAction(id){
-  actionTarget=id;
+function openAction(id){actionTarget=id;} // 後方互換
+function closeAction(){document.getElementById('actionOv').classList.remove('open');actionTarget=null;}
+
+function doComplete(){
+  if(!session)return;
+  actionTarget=session;
   const data=ls.get(KEY_SB(classId),{});
   let sess=null;
-  for(const dk of Object.keys(data)){sess=(data[dk].sessions||[]).find(s=>s.id===id);if(sess)break;}
+  for(const dk of Object.keys(data)){const f=(data[dk].sessions||[]).find(s=>s.id===session);if(f){sess=f;break;}}
   if(!sess)return;
   const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
-  document.getElementById('actionTitle').textContent=sess.name+(sess.kan?` [${sess.kan}]`:'');
-  document.getElementById('actionSub').textContent=absCount>0?`欠席者${absCount}人 → 完結時に未提出へ変換`:'';
-  document.getElementById('actionOv').classList.add('open');
+  const msg=absCount>0
+    ?`「${sess.name}」を完結しますか？
+欠席者${absCount}人は「未提出」に変換されます。`
+    :`「${sess.name}」を完結しますか？`;
+  if(!confirm(msg))return;
+  completeSession();
 }
-function closeAction(){document.getElementById('actionOv').classList.remove('open');actionTarget=null;}
+function doDelete(){
+  if(!session)return;
+  actionTarget=session;
+  const data=ls.get(KEY_SB(classId),{});
+  let sess=null;
+  for(const dk of Object.keys(data)){const f=(data[dk].sessions||[]).find(s=>s.id===session);if(f){sess=f;break;}}
+  if(!sess)return;
+  if(!confirm(`「${sess.name}」を削除しますか？
+この操作は取り消せません。`))return;
+  deleteSessionAction();
+}
 function completeSession(){
   if(!actionTarget)return;
   const data=ls.get(KEY_SB(classId),{});

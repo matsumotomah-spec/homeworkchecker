@@ -160,16 +160,17 @@
   .sb-badge-dark{color:rgba(0,0,0,.4);}
 
   /* ─── 提出物タブUI ─── */
-  .sb-toolbar{padding:8px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .sb-session-tab-wrap{flex-shrink:0;display:flex;align-items:stretch;border:2px solid var(--grid-line);background:var(--bg);transition:all .1s;user-select:none;-webkit-user-select:none;}
-  .sb-session-tab-wrap.act{background:#7b3fa0;border-color:#7b3fa0;}
-  .sb-session-tab{padding:5px 10px;border:none;background:transparent;font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;user-select:none;-webkit-user-select:none;}
-  .sb-session-tab-wrap.act .sb-session-tab{color:white;}
+  .sb-toolbar{padding:7px 12px 0;border-bottom:1px solid var(--mode-sub);display:flex;flex-direction:column;gap:0;}
+  .sb-tab-scroll{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:7px;}
+  .sb-session-tab{flex-shrink:0;padding:6px 14px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
   .sb-session-tab.act{background:#7b3fa0;color:white;border-color:#7b3fa0;}
-  .sb-session-menu-btn{padding:5px 8px;border:none;border-left:1px solid var(--grid-line);background:transparent;font-size:14px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;line-height:1;user-select:none;-webkit-user-select:none;}
-  .sb-session-tab-wrap.act .sb-session-menu-btn{border-left-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8);}
-  .sb-session-menu-btn:active{background:rgba(0,0,0,.1);}
-  .sb-session-tab.closed{background:var(--bg);border-color:var(--grid-line);color:var(--grid-line);text-decoration:line-through;display:none;}
+  /* アクティブセッションの操作ボタン行 */
+  .sb-action-row{display:none;padding:0 0 7px;gap:6px;}
+  .sb-action-row.visible{display:flex;}
+  .sb-act-btn{flex:1;height:36px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;background:var(--paper);}
+  .sb-act-btn:active{opacity:.7;}
+  .sb-act-complete{color:#2e7d4f;border-color:#2e7d4f;}
+  .sb-act-delete{color:#c84b2f;border-color:#c84b2f;}
   /* セッションアクションシート */
   .sb-action-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:350;align-items:flex-end;}
   .sb-action-overlay.open{display:flex;}
@@ -485,7 +486,13 @@
   </div>
   <!-- 提出物セッションバー -->
   <div id="sbToolbar" style="display:none">
-    <div class="sb-toolbar" id="sbTabRow"></div>
+    <div class="sb-toolbar">
+      <div class="sb-tab-scroll" id="sbTabRow"></div>
+      <div class="sb-action-row" id="sbActionRow">
+        <button class="sb-act-btn sb-act-complete" onclick="openSbComplete()">✅ 完結済みにする</button>
+        <button class="sb-act-btn sb-act-delete"   onclick="openSbDelete()">🗑 削除</button>
+      </div>
+    </div>
     <div class="sb-legend">
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0f5a2e"></div>B</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0096a0"></div>B-</div>
