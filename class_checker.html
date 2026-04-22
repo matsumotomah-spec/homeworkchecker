@@ -74,6 +74,25 @@
   .num-btn.hw-a{background:#1a1208;border-color:#1a1208;box-shadow:none;}
   .num-btn.hw-a .btn-num{color:#fff;} .num-btn.hw-a .btn-num.small{color:rgba(255,255,255,.6);} .num-btn.hw-a .btn-name{color:rgba(255,255,255,.8);}
   .num-btn.hw-a::after{content:'欠';position:absolute;top:3px;right:4px;font-size:10px;font-weight:900;color:rgba(255,255,255,.6);font-family:sans-serif;}
+  /* 要フォロー */
+  .num-btn.hw-f{background:#e8820a;border-color:#e8820a;box-shadow:none;}
+  .num-btn.hw-f .btn-num{color:#fff;} .num-btn.hw-f .btn-num.small{color:rgba(255,255,255,.7);} .num-btn.hw-f .btn-name{color:rgba(255,255,255,.9);}
+  .num-btn.hw-f::after{content:'△';position:absolute;top:3px;right:4px;font-size:11px;font-weight:900;color:rgba(255,255,255,.8);font-family:sans-serif;}
+  /* 昨日以前の要フォロー繰り越し（枠のみ） */
+  .num-btn.hw-flw{border-color:#e8820a;box-shadow:3px 3px 0 #e8820a;}
+  .num-btn.hw-flw::after{content:'△';position:absolute;top:3px;right:4px;font-size:11px;font-weight:900;color:#e8820a;font-family:sans-serif;}
+  .num-btn.hw-flw .btn-sub{color:#e8820a;font-weight:700;}
+  /* フォロー解決ポップアップ */
+  .hw-flw-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:260;align-items:center;justify-content:center;}
+  .hw-flw-overlay.open{display:flex;}
+  .hw-flw-box{background:var(--paper);border:3px solid var(--ink);padding:20px 18px 16px;width:84%;max-width:320px;box-shadow:5px 5px 0 var(--ink);}
+  .hw-flw-who{font-size:13px;font-weight:900;margin-bottom:6px;color:var(--ink-light);text-align:center;}
+  .hw-flw-date{font-size:11px;color:var(--ink-light);margin-bottom:14px;text-align:center;}
+  .hw-flw-btn{width:100%;height:50px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;-webkit-tap-highlight-color:transparent;}
+  .hw-flw-btn:active{opacity:.7;}
+  .hw-flw-resolve{background:#1d6638;color:white;border-color:#1d6638;}
+  .hw-flw-clear{background:var(--paper);color:#e8820a;border-color:#e8820a;}
+  .hw-flw-cancel{background:var(--paper);color:var(--ink-light);border-color:var(--ink-light);}
 
   /* 週宿題 */
   .tab-btn.active-wh{background:#8b5e00;color:#fff;}
@@ -467,6 +486,7 @@
   <div class="status-bar" id="statusBar" style="padding:0 14px 8px;"></div>
   <div class="hw-legend" id="hwLegend" style="display:none">
     <div class="hw-leg-item"><div class="hw-leg-dot" style="background:#1d6638"></div>提出</div>
+    <div class="hw-leg-item"><div class="hw-leg-dot" style="background:#e8820a"></div>要フォロー△</div>
     <div class="hw-leg-item"><div class="hw-leg-dot" style="background:#1a1208"></div>欠席</div>
     <div class="hw-leg-item"><div class="hw-leg-dot" style="background:var(--paper);border:1.5px solid var(--ink)"></div>未提出</div>
   </div>
@@ -783,6 +803,16 @@
   </div>
 </div>
 
+<div class="hw-flw-overlay" id="hwFlwOverlay">
+  <div class="hw-flw-box">
+    <div class="hw-flw-who" id="hwFlwWho"></div>
+    <div class="hw-flw-date" id="hwFlwDate"></div>
+    <button class="hw-flw-btn hw-flw-resolve" onclick="resolveFlw(true)">○ 今日提出した（解決）</button>
+    <button class="hw-flw-btn hw-flw-clear"   onclick="resolveFlw(false)">△ フラグだけ消す</button>
+    <button class="hw-flw-btn hw-flw-cancel"  onclick="closeFlw()">キャンセル</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- 週宿題種類追加モーダル -->
@@ -863,9 +893,10 @@
 /* ══ 定数 ══ */
 const TOTAL=30,WEEKDAYS=['日','月','火','水','木','金','土'],PRIORITY_N=5;
 const KEY_NAMES='cc_names_v1',KEY_HW='cc_hw_v3',KEY_SH='cc_sh_v1',KEY_MM='cc_mm_v1',KEY_CKPTS='cc_ckpts_v1';
+const KEY_HW_FLW='cc_hw_flw_v1'; // {num:{date,resolved}} 要フォローフラグ
 const KEY_SB='cc_sb_v1';       // 提出物: { 'YYYY-MM-DD': { sessions:[{id,name,grades:{num:grade}},...] }, master:['算数ふりかえり',...] }
 const KEY_SB_MASTER='cc_sb_master_v1'; // ['算数ふりかえり',...]
-const HW_NONE=0,HW_SUB=1,HW_ABS=2;
+const HW_NONE=0,HW_SUB=1,HW_ABS=2,HW_FLW=3; // FLW=要フォロー（翌日繰り越し）
 // 提出物評価サイクル: 0=未チェック→B→B+→A→C→未提出→欠席→B…
 // 格納値: ''=未, 'B','Bp','A','C','none','abs'
 const SB_CYCLE=['B','Bp','A','C']; // タップはB→B+→A→C→Bのみ
@@ -1015,16 +1046,31 @@ function buildGrid(){
   let info='';
   if(mode==='hw'){
     const data=ls.get(KEY_HW,{});const day=data[today()]||{};
-    let sc=0,ac=0;
-    for(let i=1;i<=TOTAL;i++){const s=day[i]||0;if(s===HW_SUB)sc++;if(s===HW_ABS)ac++;}
-    info=`提出 <b style="color:#1d6638">${sc}</b> ／ 欠席 <b style="color:#888">${ac}</b> ／ 未提出 <b style="color:#c84b2f">${TOTAL-sc-ac}</b>`;
+    const flwData=ls.get(KEY_HW_FLW,{});
+    let sc=0,ac=0,fc=0,flwc=0;
+    for(let i=1;i<=TOTAL;i++){
+      const s=day[i]||0;
+      if(s===HW_SUB)sc++;else if(s===HW_ABS)ac++;else if(s===HW_FLW)fc++;
+      if(flwData[i]&&!flwData[i].resolved&&flwData[i].date!==today())flwc++;
+    }
+    info=`提出 <b style="color:#1d6638">${sc}</b> ／ 欠席 <b style="color:#888">${ac}</b> ／ △ <b style="color:#e8820a">${fc}</b> ／ 繰越△ <b style="color:#e8820a">${flwc}</b> ／ 未 <b style="color:#c84b2f">${TOTAL-sc-ac-fc}</b>`;
     const hwNums=applyLayoutToGrid(grid)||Array.from({length:TOTAL},(_,i)=>i+1);
     hwNums.forEach(i=>{
       if(i===null){grid.appendChild(makeBtnOrEmpty(null));return;}
       const btn=makeBtnOrEmpty(i);
-      if(editMode)btn.classList.add('edit-ready');
-      else{const s=day[i]||0;if(s===HW_SUB)btn.classList.add('hw-s');else if(s===HW_ABS)btn.classList.add('hw-a');}
-      btn.addEventListener('click',()=>{if(editMode)openNe(i);else cycleHw(i);});
+      const s=day[i]||0;
+      const flw=flwData[i]; // {date, resolved}
+      const hasPrevFlw=flw&&!flw.resolved&&flw.date!==today(); // 昨日以前の繰り越し
+      if(editMode){btn.classList.add('edit-ready');}
+      else if(s===HW_SUB){btn.classList.add('hw-s');}
+      else if(s===HW_ABS){btn.classList.add('hw-a');}
+      else if(s===HW_FLW){btn.classList.add('hw-f');}
+      else if(hasPrevFlw){btn.classList.add('hw-flw');addSub(btn,fmtShort(flw.date));}
+      btn.addEventListener('click',()=>{
+        if(editMode){openNe(i);return;}
+        if(hasPrevFlw&&s===HW_NONE){openFlw(i);return;} // 繰り越し中はフォロー解決ダイアログ
+        cycleHw(i);
+      });
       grid.appendChild(btn);
     });
   }
@@ -1234,10 +1280,52 @@ function applyLayoutToGrid(grid, buildCardFn){
 function cycleHw(n){
   const data=ls.get(KEY_HW,{}),t=today();
   if(!data[t])data[t]={};
-  const cur=data[t][n]||0;const next=(cur+1)%3;
+  const cur=data[t][n]||0;
+  // 0(未)→1(提出)→2(欠席)→3(要フォロー)→0(未)
+  const next=(cur+1)%4;
   if(next===0)delete data[t][n];else data[t][n]=next;
   if(!Object.keys(data[t]).length)delete data[t];
+  // 要フォローにしたらフラグを記録
+  const flwData=ls.get(KEY_HW_FLW,{});
+  if(next===HW_FLW){
+    flwData[n]={date:t,resolved:false};
+    ls.set(KEY_HW_FLW,flwData);
+  } else if(cur===HW_FLW){
+    // フォローから外したらフラグ削除
+    delete flwData[n];
+    ls.set(KEY_HW_FLW,flwData);
+  }
   ls.set(KEY_HW,data);buildGrid();
+}
+
+/* ══ フォロー解決ポップアップ ══ */
+let hwFlwTarget=null;
+function openFlw(n){
+  hwFlwTarget=n;
+  const flwData=ls.get(KEY_HW_FLW,{});
+  const names=ls.get(KEY_NAMES,{});
+  const nameStr=names[n]?`${n}番（${names[n]}）`:`${n}番`;
+  document.getElementById('hwFlwWho').textContent=nameStr;
+  document.getElementById('hwFlwDate').textContent=`要フォロー記録日: ${fmtShort(flwData[n]?.date||today())}`;
+  document.getElementById('hwFlwOverlay').classList.add('open');
+}
+function closeFlw(){document.getElementById('hwFlwOverlay').classList.remove('open');hwFlwTarget=null;}
+function resolveFlw(submit){
+  if(hwFlwTarget===null)return;
+  const flwData=ls.get(KEY_HW_FLW,{});
+  flwData[hwFlwTarget]={...flwData[hwFlwTarget],resolved:true};
+  ls.set(KEY_HW_FLW,flwData);
+  if(submit){
+    // 今日の宿題を提出扱いにする
+    const data=ls.get(KEY_HW,{}),t=today();
+    if(!data[t])data[t]={};
+    data[t][hwFlwTarget]=HW_SUB;
+    ls.set(KEY_HW,data);
+    showToast(`${hwFlwTarget}番 今日提出 ○ に更新しました`);
+  } else {
+    showToast(`${hwFlwTarget}番 フォローフラグを解除しました`);
+  }
+  closeFlw();buildGrid();
 }
 
 /* ══ 週宿題 ══ */
@@ -1811,6 +1899,7 @@ function exportJSON(){
     data:{
       [KEY_NAMES]:    ls.get(KEY_NAMES,{}),
       [KEY_HW]:       ls.get(KEY_HW,{}),
+      [KEY_HW_FLW]:   ls.get(KEY_HW_FLW,{}),
       [KEY_WH]:       ls.get(KEY_WH,{}),
       [KEY_WH_TYPES]: ls.get(KEY_WH_TYPES,[]),
       [KEY_SH]:       ls.get(KEY_SH,{}),
@@ -1924,7 +2013,7 @@ function downloadCSV(keys){
   for(let i=1;i<=TOTAL;i++){
     const row=[String(i)];
     cols.forEach(({k,kind,sess,typeId})=>{
-      if(kind==='hw'){const s=(hw[k]||{})[i]||0;row.push(s===HW_SUB?'○':s===HW_ABS?'欠':'');}
+      if(kind==='hw'){const s=(hw[k]||{})[i]||0;row.push(s===HW_SUB?'○':s===HW_ABS?'欠':s===HW_FLW?'△':'');}
       else if(kind==='wh'){const s=((wh[k]||{})[typeId]||{})[i]||0;row.push(s===HW_SUB?'○':s===HW_ABS?'欠':'');}
       else if(kind==='sh'){row.push((sh[k]?.given||[]).includes(i)?'○':'');}
       else if(kind==='mm'){const t=(mm[k]?.[i]||'').trim().replace(/\n/g,' / ');row.push(cc(t));}
@@ -2234,7 +2323,7 @@ function closeHelp(){document.getElementById('helpOverlay').classList.remove('op
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 /* モーダル外タップ */
-[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp],['scoreOverlay',closeScore]].forEach(([id,fn])=>{
+[['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp],['scoreOverlay',closeScore],['hwFlwOverlay',closeFlw]].forEach(([id,fn])=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fn();});
 });
 document.getElementById('neInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNeName();});
