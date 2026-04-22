@@ -161,8 +161,14 @@
 
   /* ─── 提出物タブUI ─── */
   .sb-toolbar{padding:8px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .sb-session-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;transition:all .1s;white-space:nowrap;}
+  .sb-session-tab-wrap{flex-shrink:0;display:flex;align-items:stretch;border:2px solid var(--grid-line);background:var(--bg);transition:all .1s;}
+  .sb-session-tab-wrap.act{background:#7b3fa0;border-color:#7b3fa0;}
+  .sb-session-tab{padding:5px 10px;border:none;background:transparent;font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .sb-session-tab-wrap.act .sb-session-tab{color:white;}
   .sb-session-tab.act{background:#7b3fa0;color:white;border-color:#7b3fa0;}
+  .sb-session-menu-btn{padding:5px 8px;border:none;border-left:1px solid var(--grid-line);background:transparent;font-size:14px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;line-height:1;}
+  .sb-session-tab-wrap.act .sb-session-menu-btn{border-left-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8);}
+  .sb-session-menu-btn:active{background:rgba(0,0,0,.1);}
   .sb-session-tab.closed{background:var(--bg);border-color:var(--grid-line);color:var(--grid-line);text-decoration:line-through;display:none;}
   /* セッションアクションシート */
   .sb-action-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:350;align-items:flex-end;}
@@ -1363,18 +1369,21 @@ function renderSbToolbar(){
   const allActive=getSbAllActive(); // [{sess,dateKey}]
   const row=document.getElementById('sbTabRow');row.innerHTML='';
   allActive.forEach(({sess,dateKey})=>{
-    const tab=el('button','sb-session-tab');
-    if(sess.id===sbSession)tab.classList.add('act');
-    // 作成日が今日でない場合は日付バッジを表示
+    const wrap=el('div','sb-session-tab-wrap');
+    if(sess.id===sbSession)wrap.classList.add('act');
     const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
+    // セッション名ボタン（切替）
+    const tab=el('button','sb-session-tab');
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.title=`作成日: ${fmtShort(dateKey)}`;
     tab.addEventListener('click',()=>{sbSession=sess.id;renderSbToolbar();buildGrid();});
-    let pressTimer;
-    tab.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>openSbAction(sess.id),600);});
-    tab.addEventListener('pointerup',()=>clearTimeout(pressTimer));
-    tab.addEventListener('pointerleave',()=>clearTimeout(pressTimer));
-    row.appendChild(tab);
+    // ⋮ メニューボタン（完結・削除）
+    const menuBtn=el('button','sb-session-menu-btn');
+    menuBtn.textContent='⋮';
+    menuBtn.title='完結・削除';
+    menuBtn.addEventListener('click',(e)=>{e.stopPropagation();openSbAction(sess.id);});
+    wrap.appendChild(tab);wrap.appendChild(menuBtn);
+    row.appendChild(wrap);
   });
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
   addBtn.addEventListener('click',openSbAdd);
