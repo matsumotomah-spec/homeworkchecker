@@ -1440,24 +1440,27 @@ function closeSbAction(){
 }
 function completeSbSession(){
   if(!sbActionTarget)return;
-  const day=getSbDay();
-  const sess=day.sessions.find(s=>s.id===sbActionTarget);
+  // 全日付を横断してセッションを探す
+  const data=ls.get(KEY_SB,{});
+  let targetDk=null, sess=null;
+  for(const dk of Object.keys(data)){
+    const f=(data[dk].sessions||[]).find(s=>s.id===sbActionTarget);
+    if(f){targetDk=dk;sess=f;break;}
+  }
   if(!sess){closeSbAction();return;}
-  // absを全て未提出(none)に変換
+  // absを未提出に変換
   Object.keys(sess.grades||{}).forEach(n=>{
     if(sess.grades[n]==='abs')sess.grades[n]='none';
   });
-  // 点数型の欠席も消去
   Object.keys(sess.scores||{}).forEach(n=>{
     if(sess.scores[n]==='abs')delete sess.scores[n];
   });
   sess.closed=true;
-  // 宿題タブの自動abs連携も解除（完結後は独立）
-  saveSbDay(day);
+  ls.set(KEY_SB,data);
   closeSbAction();
-  // 完結したセッションからアクティブを切り替え
-  const active=day.sessions.filter(s=>!s.closed);
-  if(sbSession===sbActionTarget)sbSession=active.length?active[active.length-1].id:null;
+  const allActive=getSbAllActive();
+  if(sbSession===sbActionTarget)sbSession=allActive.length?allActive[0].sess.id:null;
+  sbArchiveMode=false;
   renderSbToolbar();buildGrid();
   showToast('セッションを完結しました');
 }
