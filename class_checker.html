@@ -160,17 +160,13 @@
   .sb-badge-dark{color:rgba(0,0,0,.4);}
 
   /* ─── 提出物タブUI ─── */
-  .sb-toolbar{padding:7px 12px 0;border-bottom:1px solid var(--mode-sub);display:flex;flex-direction:column;gap:0;}
-  .sb-tab-scroll{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:7px;}
-  .sb-session-tab{flex-shrink:0;padding:6px 14px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .sb-toolbar{padding:8px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .sb-session-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;transition:all .1s;}
   .sb-session-tab.act{background:#7b3fa0;color:white;border-color:#7b3fa0;}
-  /* アクティブセッションの操作ボタン行 */
-  .sb-action-row{display:none;padding:0 0 7px;gap:6px;}
-  .sb-action-row.visible{display:flex;}
-  .sb-act-btn{flex:1;height:36px;border:2px solid var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;background:var(--paper);}
-  .sb-act-btn:active{opacity:.7;}
-  .sb-act-complete{color:#2e7d4f;border-color:#2e7d4f;}
-  .sb-act-delete{color:#c84b2f;border-color:#c84b2f;}
+  .sb-session-tab.archive-mode{border-style:dashed;border-color:#c84b2f;color:#c84b2f;}
+  .sb-session-tab.act.archive-mode{background:#c84b2f;border-color:#c84b2f;border-style:solid;color:white;}
+  .sb-archive-btn{flex-shrink:0;padding:5px 10px;border:2px solid var(--grid-line);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .sb-archive-btn.on{background:#c84b2f;color:white;border-color:#c84b2f;}
   /* セッションアクションシート */
   .sb-action-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:350;align-items:flex-end;}
   .sb-action-overlay.open{display:flex;}
@@ -486,13 +482,7 @@
   </div>
   <!-- 提出物セッションバー -->
   <div id="sbToolbar" style="display:none">
-    <div class="sb-toolbar">
-      <div class="sb-tab-scroll" id="sbTabRow"></div>
-      <div class="sb-action-row" id="sbActionRow">
-        <button class="sb-act-btn sb-act-complete" onclick="openSbComplete()">✅ 完結済みにする</button>
-        <button class="sb-act-btn sb-act-delete"   onclick="openSbDelete()">🗑 削除</button>
-      </div>
-    </div>
+    <div class="sb-toolbar" id="sbTabRow"></div>
     <div class="sb-legend">
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0f5a2e"></div>B</div>
       <div class="sb-leg-item"><div class="sb-leg-dot" style="background:#0096a0"></div>B-</div>
@@ -941,8 +931,9 @@ const DEFAULT_CKPTS={
 let mode='hw',names={},editMode=false,pwBuf='',pwPurpose='edit',neTarget=null;
 let memoTarget=null,memoDate=null,memoSubtab='check';
 let ckSubject=null,ckItems=[];
-let sbSession=null; // 現在選択中のセッションid
-let sbActionTarget=null; // アクションシート対象セッションid
+let sbSession=null;
+let sbActionTarget=null;
+let sbArchiveMode=false; // アーカイブモード
 let whTypeId=null;  // 現在選択中の週宿題種類id
 
 /* ══ ストレージ ══ */
@@ -999,6 +990,7 @@ function requestModeSwitch(target){
 }
 function doSwitch(m){
   mode=m;editMode=false;
+  if(m!=='sb')sbArchiveMode=false;
   const cfg=MODES[m],r=document.documentElement.style;
   r.setProperty('--mode-accent',cfg.accent);r.setProperty('--mode-bg',cfg.bg);
   r.setProperty('--mode-header',cfg.header);r.setProperty('--mode-sub',cfg.sub);
@@ -1373,36 +1365,52 @@ function saveSbSessionInPlace(sess){
 
 // セッションタブ描画
 function renderSbToolbar(){
-  const allActive=getSbAllActive(); // [{sess,dateKey}]
+  const allActive=getSbAllActive();
   const row=document.getElementById('sbTabRow');row.innerHTML='';
   allActive.forEach(({sess,dateKey})=>{
-    const wrap=el('div','sb-session-tab-wrap');
-    if(sess.id===sbSession)wrap.classList.add('act');
-    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
-    // セッション名ボタン（切替）
     const tab=el('button','sb-session-tab');
+    if(sess.id===sbSession)tab.classList.add('act');
+    if(sbArchiveMode)tab.classList.add('archive-mode');
+    const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
-    tab.title=`作成日: ${fmtShort(dateKey)}`;
-    tab.addEventListener('click',()=>{sbSession=sess.id;renderSbToolbar();buildGrid();});
-    // ⋮ メニューボタン（完結・削除）
-    const menuBtn=el('button','sb-session-menu-btn');
-    menuBtn.textContent='⋮';
-    menuBtn.title='完結・削除';
-    menuBtn.addEventListener('click',(e)=>{e.stopPropagation();openSbAction(sess.id);});
-    menuBtn.addEventListener('touchstart',(e)=>{e.preventDefault();openSbAction(sess.id);},{passive:false});
-    wrap.appendChild(tab);wrap.appendChild(menuBtn);
-    row.appendChild(wrap);
+    tab.addEventListener('click',()=>{
+      if(sbArchiveMode){
+        sbSession=sess.id;
+        sbArchiveConfirm(sess);
+      } else {
+        sbSession=sess.id;renderSbToolbar();buildGrid();
+      }
+    });
+    row.appendChild(tab);
   });
+  // ＋追加ボタン
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
-  addBtn.addEventListener('click',openSbAdd);
+  addBtn.addEventListener('click',()=>{sbArchiveMode=false;renderSbToolbar();openSbAdd();});
   row.appendChild(addBtn);
-  // アクティブセッションが完結済みになっていたら別のに切り替え
+  // 📦アーカイブボタン
+  const archBtn=el('button','sb-archive-btn');
+  archBtn.textContent='📦';
+  archBtn.title='アーカイブモード（タップで完結）';
+  if(sbArchiveMode)archBtn.classList.add('on');
+  archBtn.addEventListener('click',()=>{sbArchiveMode=!sbArchiveMode;renderSbToolbar();});
+  row.appendChild(archBtn);
+  // アクティブセッションが完結済みなら切り替え
   const activeIds=allActive.map(x=>x.sess.id);
   if(sbSession&&!activeIds.includes(sbSession)){
     sbSession=allActive.length?allActive[0].sess.id:null;
   }
 }
 
+function sbArchiveConfirm(sess){
+  const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
+  const msg=absCount>0
+    ?`「${sess.name}」を完結しますか？\n欠席者${absCount}人は「未提出」に変換されます。`
+    :`「${sess.name}」を完結しますか？`;
+  if(!confirm(msg)){renderSbToolbar();buildGrid();return;}
+  sbActionTarget=sess.id;
+  completeSbSession();
+  sbArchiveMode=false;
+}
 function removeSbSession(id){
   const data=ls.get(KEY_SB,{});
   Object.keys(data).forEach(dk=>{
