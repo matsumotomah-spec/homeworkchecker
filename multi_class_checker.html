@@ -36,8 +36,14 @@
 
   /* セッションバー */
   .sb-toolbar{padding:7px 12px;border-bottom:1px solid var(--grid-line);display:flex;align-items:center;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .sb-session-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .sb-session-tab-wrap{flex-shrink:0;display:flex;align-items:stretch;border:2px solid var(--grid-line);background:var(--bg);transition:all .1s;}
+  .sb-session-tab-wrap.act{background:var(--accent);border-color:var(--accent);}
+  .sb-session-tab{padding:5px 10px;border:none;background:transparent;font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+  .sb-session-tab-wrap.act .sb-session-tab{color:white;}
   .sb-session-tab.act{background:var(--accent);color:white;border-color:var(--accent);}
+  .sb-session-menu-btn{padding:5px 8px;border:none;border-left:1px solid var(--grid-line);background:transparent;font-size:14px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;line-height:1;}
+  .sb-session-tab-wrap.act .sb-session-menu-btn{border-left-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8);}
+  .sb-session-menu-btn:active{background:rgba(0,0,0,.1);}
   .sb-add-tab{flex-shrink:0;padding:5px 10px;border:2px dashed var(--grid-line);background:transparent;font-size:18px;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;}
 
   /* 凡例 */
@@ -490,15 +496,18 @@ function renderSbToolbar(){
   const allActive=getSbAllActive();
   const row=document.getElementById('sbTabRow');row.innerHTML='';
   allActive.forEach(({sess,dateKey})=>{
-    const tab=el('button','sb-session-tab'+(sess.id===session?' act':''));
+    const wrap=el('div','sb-session-tab-wrap');
+    if(sess.id===session)wrap.classList.add('act');
     const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
+    const tab=el('button','sb-session-tab');
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.addEventListener('click',()=>{session=sess.id;renderSbToolbar();buildGrid();});
-    let pt;
-    tab.addEventListener('pointerdown',()=>{pt=setTimeout(()=>openAction(sess.id),600);});
-    tab.addEventListener('pointerup',()=>clearTimeout(pt));
-    tab.addEventListener('pointerleave',()=>clearTimeout(pt));
-    row.appendChild(tab);
+    const menuBtn=el('button','sb-session-menu-btn');
+    menuBtn.textContent='⋮';
+    menuBtn.title='完結・削除';
+    menuBtn.addEventListener('click',(e)=>{e.stopPropagation();openAction(sess.id);});
+    wrap.appendChild(tab);wrap.appendChild(menuBtn);
+    row.appendChild(wrap);
   });
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
   addBtn.addEventListener('click',openAddOv);
