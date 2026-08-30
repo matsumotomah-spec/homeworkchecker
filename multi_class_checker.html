@@ -12,6 +12,8 @@
     --accent:#7b3fa0;--accent2:#5a2d80;--green:#2e7d4f;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  button{touch-action:manipulation;}
+  .num-btn,.tab-btn,.btn,.sb-session-tab,.sb-add-tab,.btn-archive,.hdr-hamburger,.drawer-item,.sb-act-btn{touch-action:manipulation;-webkit-touch-callout:none;}
   body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);padding-bottom:120px;}
 
   /* ─── HEADER ─── */
@@ -29,7 +31,12 @@
   .header-body{padding:10px 16px 8px;}
   .header-top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
   .mode-label{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--accent);border:1.5px solid var(--accent);padding:2px 7px;flex-shrink:0;}
-  .date-display{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;color:var(--ink);}
+  .date-display{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:4px;min-width:0;}
+  .date-nav{width:30px;height:34px;border:1.5px solid var(--grid-line);background:var(--paper);font-size:12px;cursor:pointer;color:var(--ink-light);flex-shrink:0;padding:0;font-family:sans-serif;}
+  .date-nav:active{background:var(--bg);}
+  #dateStr{cursor:pointer;white-space:nowrap;}
+  #dateStr.past{color:#c0392b;text-decoration:underline;}
+  .date-today-btn{height:26px;padding:0 8px;border:1.5px solid #c0392b;background:#c0392b;color:#fff;font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;}
   .date-display .weekday{font-size:12px;font-weight:400;color:var(--accent);margin-left:6px;font-family:'Zen Kaku Gothic New',sans-serif;}
   .status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .stat-chip{font-size:12px;font-weight:700;}
@@ -95,6 +102,7 @@
   .btn-csv{background:var(--accent);color:white;border-color:var(--accent);flex:2;}
   .btn-hist{background:var(--ink);color:white;}
   .btn-cfg{background:var(--paper);color:var(--ink-light);}
+  .btn-archive{background:#5a2d80;color:white;border-color:#5a2d80;}
 
   /* ─── MODALS ─── */
   .ov{display:none;position:fixed;inset:0;background:rgba(26,18,8,.72);z-index:200;align-items:flex-end;}
@@ -218,7 +226,14 @@
   <div class="header-body">
     <div class="header-top">
       <span class="mode-label">📋 提出物</span>
-      <div class="date-display"><span id="dateStr">--</span><span class="weekday" id="weekdayStr">--</span></div>
+      <div class="date-display">
+        <button class="date-nav" onclick="shiftDate(-1)">◀</button>
+        <span id="dateStr" onclick="openDatePicker()">--</span>
+        <button class="date-nav" onclick="shiftDate(1)">▶</button>
+        <span class="weekday" id="weekdayStr">--</span>
+        <button class="date-today-btn" id="btnToday" onclick="goToday()" style="display:none">今日へ</button>
+        <input type="date" id="datePicker" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="onDatePicked(event)">
+      </div>
     </div>
     <div class="status-bar" id="statusBar"></div>
   </div>
@@ -240,6 +255,7 @@
 
 <div class="bottom-bar">
   <button class="btn btn-csv" onclick="saveAndExportToday()">保存 &amp; CSV</button>
+  <button class="btn btn-archive" id="btnArchive" onclick="openArchiveMode()">📦 完結</button>
   <button class="btn btn-hist" onclick="openHistory()">履歴</button>
   <button class="btn btn-cfg"  onclick="openSettings()">⚙ 設定</button>
 </div>
@@ -296,13 +312,13 @@
   <div class="box">
     <div class="modal-title"><span>履歴</span><button class="modal-close" onclick="closeHistory()">×</button></div>
     <div id="histList"></div>
+    <button class="btn-export-all" onclick="exportAllCSV()">📥 全履歴をCSVで一括出力</button>
     <div class="import-section">
       <div class="import-title">📦 バックアップ・復元</div>
       <button class="btn-backup" onclick="exportJSON()">💾 JSONバックアップを保存</button>
       <button class="btn-import" onclick="triggerImport()">📂 JSONファイルをインポート</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
     </div>
-    <button class="btn-export-all" onclick="exportAllCSV()">📥 全履歴をCSVで一括出力</button>
   </div>
 </div>
 
@@ -320,6 +336,9 @@
     <!-- 教科・観点設定 -->
     <div style="font-size:13px;font-weight:900;margin-bottom:10px;">チェック観点（全クラス共通）</div>
     <div id="cfgBody"></div>
+
+    <div style="height:1px;background:var(--grid-line);margin:16px 0;"></div>
+    <button style="width:100%;height:46px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);" onclick="location.href='./launcher.html'">🏠 ホームに戻る</button>
   </div>
 </div>
 
@@ -341,9 +360,21 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ════ 環境チェック ════ */
+try{
+  localStorage.setItem('_test','1');
+  localStorage.removeItem('_test');
+}catch(e){
+  alert('このブラウザではデータ保存ができません。\nシークレット/プライベートモードを解除してください。');
+}
+
 /* ════ 定数 ════ */
 const WEEKDAYS=['日','月','火','水','木','金','土'];
-const CLASS_IDS=['A','B','C'];
+// クラスIDはmetaに保存（動的増減対応）。互換のためデフォルトはA/B/C
+function getClassIds(){
+  const m=ls.get(KEY_META,null);
+  return (m&&Array.isArray(m.classIds)&&m.classIds.length)?m.classIds:['A','B','C'];
+}
 const SB_CYCLE=['B','Bp','A','Bm','C'];
 const SB_LABEL={B:'B',Bp:'B+',Bm:'B-',A:'A',C:'C',none:'未',abs:'欠'};
 const SB_KAN=['知識技能','思考判断','主体態度'];
@@ -389,12 +420,11 @@ const KEY_NAMES  = (id)=>`mc_names_${id}_v1`; // 名前データ
 
 /* ════ グローバル ════ */
 const ls={
-  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){console.warn('ls.get失敗',k,e);return def;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('ls.set失敗',k,e);showToast('保存に失敗しました（容量超過の可能性）');}},
 };
-let classId='A';         // 現在のクラス
+let classId='A'; // 初期クラス         // 現在のクラス
 let session=null;
-let archiveMode=false;        // 現在のセッションid
 let evalTarget=null;
 let lastTap={n:null,t:0};
 let actionTarget=null;
@@ -402,30 +432,63 @@ let addSubj='', addKan='';
 
 /* ════ メタ情報（クラス名・人数） ════ */
 function getMeta(){
-  return ls.get(KEY_META,{
-    classNames:{A:'Aクラス',B:'Bクラス',C:'Cクラス'},
-    totals:{A:30,B:30,C:30}
+  const m=ls.get(KEY_META,{});
+  if(!Array.isArray(m.classIds)||!m.classIds.length)m.classIds=['A','B','C'];
+  if(!m.classNames)m.classNames={};
+  if(!m.totals)m.totals={};
+  m.classIds.forEach(id=>{
+    if(!m.classNames[id])m.classNames[id]=id+'クラス';
+    if(!m.totals[id])m.totals[id]=30;
   });
+  return m;
 }
 function getTotal(){return getMeta().totals[classId]||30;}
 function getClassName(id){return getMeta().classNames[id]||`${id}クラス`;}
 function getNames(){return ls.get(KEY_NAMES(classId),{});}
 
 /* ════ 日付 ════ */
-function today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+let workDate=null;
+function realToday(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function today(){return workDate||realToday();}
 function fmtJP(k){const[y,m,d]=k.split('-');return`${y}年${m}月${d}日（${WEEKDAYS[new Date(+y,+m-1,+d).getDay()]}）`;}
 function fmtShort(k){const[,m,d]=k.split('-');return`${+m}/${+d}`;}
 
 function initDate(){
-  const d=new Date(),[y,m,dy]=today().split('-');
-  document.getElementById('dateStr').textContent=`${y}.${m}.${dy}`;
+  const t=today();
+  const[y,m,dy]=t.split('-');
+  const d=new Date(+y,+m-1,+dy);
+  const ds=document.getElementById('dateStr');
+  ds.textContent=`${y}.${m}.${dy}`;
   document.getElementById('weekdayStr').textContent=WEEKDAYS[d.getDay()]+'曜日';
+  const isPast=(t!==realToday());
+  ds.classList.toggle('past',isPast);
+  document.getElementById('btnToday').style.display=isPast?'':'none';
 }
+
+/* ══ 日付変更（過去に遡って記録） ══ */
+function shiftDate(delta){
+  const[y,m,d]=today().split('-').map(Number);
+  const dt=new Date(y,m-1,d+delta);
+  setWorkDate(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`);
+}
+function setWorkDate(dateStr){
+  workDate=(dateStr===realToday())?null:dateStr;
+  initDate();
+  renderSbToolbar();buildGrid();
+  if(workDate)showToast('📅 '+fmtShort(workDate)+' の記録を編集中');
+}
+function goToday(){workDate=null;initDate();renderSbToolbar();buildGrid();showToast('今日に戻りました');}
+function openDatePicker(){
+  const dp=document.getElementById('datePicker');
+  dp.value=today();
+  if(dp.showPicker)dp.showPicker();else dp.click();
+}
+function onDatePicked(e){if(e.target.value)setWorkDate(e.target.value);}
 
 /* ════ クラスタブ ════ */
 function renderClassTabs(){
   const tabs=document.getElementById('classTabs');tabs.innerHTML='';
-  CLASS_IDS.forEach(id=>{
+  getClassIds().forEach(id=>{
     const tab=el('button','cls-tab'+(id===classId?' active':''));
     const lbl=el('span','cls-label');lbl.textContent='クラス'+id;
     const nm=el('span','cls-name');nm.textContent=getClassName(id);
@@ -500,48 +563,29 @@ function renderSbToolbar(){
   allActive.forEach(({sess,dateKey})=>{
     const tab=el('button','sb-session-tab');
     if(sess.id===session)tab.classList.add('act');
-    if(archiveMode)tab.classList.add('archive-mode');
     const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.addEventListener('click',()=>{
-      if(archiveMode){
-        session=sess.id;
-        archiveConfirm(sess);
-      } else {
-        session=sess.id;renderSbToolbar();buildGrid();
-      }
+      session=sess.id;renderSbToolbar();buildGrid();
     });
     row.appendChild(tab);
   });
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
-  addBtn.addEventListener('click',()=>{archiveMode=false;renderSbToolbar();openAddOv();});
+  addBtn.addEventListener('click',openSbAddBtn);
   row.appendChild(addBtn);
-  const archBtn=el('button','sb-archive-btn');
-  archBtn.textContent='📦';
-  archBtn.title='アーカイブモード（タップで完結）';
-  if(archiveMode)archBtn.classList.add('on');
-  archBtn.addEventListener('click',()=>{archiveMode=!archiveMode;renderSbToolbar();});
-  row.appendChild(archBtn);
   const activeIds=allActive.map(x=>x.sess.id);
   if(session&&!activeIds.includes(session)){
     session=allActive.length?allActive[0].sess.id:null;
   }
 }
-function archiveConfirm(sess){
-  const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
-  const msg=absCount>0
-    ?`「${sess.name}」を完結しますか？
-欠席者${absCount}人は「未提出」に変換されます。`
-    :`「${sess.name}」を完結しますか？`;
-  if(!confirm(msg)){renderSbToolbar();buildGrid();return;}
-  actionTarget=sess.id;
-  completeSession();
-  archiveMode=false;
-}
+
 
 /* ════ グリッド ════ */
 function buildGrid(){
   const grid=document.getElementById('numGrid');grid.innerHTML='';
+  // 提出物モードのときだけアーカイブボタンを表示
+  const archBtn=document.getElementById('btnArchive');
+  if(archBtn)archBtn.style.display='';
   const total=getTotal();
   grid.style.gridTemplateColumns='repeat(5,1fr)';
   const names=getNames();
@@ -688,32 +732,6 @@ function addSession(){
 function openAction(id){actionTarget=id;} // 後方互換
 function closeAction(){document.getElementById('actionOv').classList.remove('open');actionTarget=null;}
 
-function doComplete(){
-  if(!session)return;
-  actionTarget=session;
-  const data=ls.get(KEY_SB(classId),{});
-  let sess=null;
-  for(const dk of Object.keys(data)){const f=(data[dk].sessions||[]).find(s=>s.id===session);if(f){sess=f;break;}}
-  if(!sess)return;
-  const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
-  const msg=absCount>0
-    ?`「${sess.name}」を完結しますか？
-欠席者${absCount}人は「未提出」に変換されます。`
-    :`「${sess.name}」を完結しますか？`;
-  if(!confirm(msg))return;
-  completeSession();
-}
-function doDelete(){
-  if(!session)return;
-  actionTarget=session;
-  const data=ls.get(KEY_SB(classId),{});
-  let sess=null;
-  for(const dk of Object.keys(data)){const f=(data[dk].sessions||[]).find(s=>s.id===session);if(f){sess=f;break;}}
-  if(!sess)return;
-  if(!confirm(`「${sess.name}」を削除しますか？
-この操作は取り消せません。`))return;
-  deleteSessionAction();
-}
 function completeSession(){
   if(!actionTarget)return;
   const data=ls.get(KEY_SB(classId),{});
@@ -753,11 +771,42 @@ function openSettings(){
 }
 function closeSettings(){document.getElementById('settingsOv').classList.remove('open');}
 
+function addClass(){
+  const m=getMeta();
+  if(m.classIds.length>=8){showToast('クラスは最大8つまでです');return;}
+  // 未使用のIDを A..Z から探す
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let newId=null;
+  for(const ch of alphabet){if(!m.classIds.includes(ch)){newId=ch;break;}}
+  if(!newId)return;
+  m.classIds.push(newId);
+  m.classNames[newId]=newId+'クラス';
+  m.totals[newId]=30;
+  ls.set(KEY_META,m);
+  renderClassNameRows();renderClassTabs();
+  showToast(`クラス${newId}を追加しました`);
+}
+function removeClass(id){
+  const m=getMeta();
+  if(m.classIds.length<=1){showToast('最後の1クラスは削除できません');return;}
+  const sbCount=Object.keys(ls.get(KEY_SB(id),{})).length;
+  const nmCount=Object.keys(ls.get(KEY_NAMES(id),{})).length;
+  let msg=`クラス${id}（${getClassName(id)}）を削除しますか？`;
+  if(sbCount||nmCount)msg+=`\n記録${sbCount}日分・名前${nmCount}件も削除されます。`;
+  if(!confirm(msg))return;
+  m.classIds=m.classIds.filter(x=>x!==id);
+  delete m.classNames[id];delete m.totals[id];
+  ls.set(KEY_META,m);
+  try{localStorage.removeItem(KEY_SB(id));localStorage.removeItem(KEY_NAMES(id));}catch{}
+  if(classId===id)classId=m.classIds[0];
+  renderClassNameRows();renderClassTabs();renderSbToolbar();buildGrid();
+  showToast(`クラス${id}を削除しました`);
+}
 function renderClassNameRows(){
   const meta=getMeta();
   const area=document.getElementById('classNameRows');area.innerHTML='';
   // クラス名入力
-  CLASS_IDS.forEach(id=>{
+  getClassIds().forEach(id=>{
     const row=el('div','cls-name-row');
     const lbl=el('span','cls-name-label');lbl.textContent='クラス'+id;
     const inp=el('input','cls-name-inp');
@@ -766,13 +815,22 @@ function renderClassNameRows(){
       const m=getMeta();m.classNames[id]=inp.value.trim()||id+'クラス';
       ls.set(KEY_META,m);renderClassTabs();
     });
-    row.appendChild(lbl);row.appendChild(inp);
+    const delBtn=el('button');
+    delBtn.style.cssText='height:30px;padding:0 9px;border:1.5px solid #c0392b;background:var(--paper);color:#c0392b;font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;';
+    delBtn.textContent='削除';
+    delBtn.addEventListener('click',()=>removeClass(id));
+    row.appendChild(lbl);row.appendChild(inp);row.appendChild(delBtn);
     area.appendChild(row);
   });
+  const addRow=el('button');
+  addRow.style.cssText='width:100%;height:38px;border:2px dashed var(--grid-line);background:transparent;font-family:"Zen Kaku Gothic New",sans-serif;font-size:13px;font-weight:700;color:var(--ink-light);cursor:pointer;margin-bottom:6px;';
+  addRow.textContent='＋ クラスを追加';
+  addRow.addEventListener('click',addClass);
+  area.appendChild(addRow);
   // 人数設定
   const sep=el('div');sep.style.cssText='font-size:13px;font-weight:900;margin:12px 0 8px;';sep.textContent='人数';
   area.appendChild(sep);
-  CLASS_IDS.forEach(id=>{
+  getClassIds().forEach(id=>{
     const row=el('div','cls-name-row');
     const lbl=el('span','cls-name-label');lbl.textContent='クラス'+id;
     const inp=el('input','cls-name-inp total-inp');inp.type='number';inp.min=1;inp.max=50;
@@ -852,12 +910,12 @@ function applyNamesCSV(){
 /* ════ CSV出力 ════ */
 function saveAndExportToday(){
   const t=today();
-  CLASS_IDS.forEach(id=>{const d=ls.get(KEY_SB(id),{});if(!d[t])d[t]={sessions:[]};ls.set(KEY_SB(id),d);});
+  getClassIds().forEach(id=>{const d=ls.get(KEY_SB(id),{});if(!d[t])d[t]={sessions:[]};ls.set(KEY_SB(id),d);});
   downloadCSV([t]);showToast('保存・CSV出力しました');
 }
 function exportAllCSV(){
   const allKeys=new Set();
-  CLASS_IDS.forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>allKeys.add(k)));
+  getClassIds().forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>allKeys.add(k)));
   const keys=[...allKeys].sort();
   if(!keys.length){showToast('記録がありません');return;}
   downloadCSV(keys);showToast('全履歴をCSV出力しました');
@@ -867,7 +925,7 @@ function downloadCSV(keys){
   const cols=[];
   keys.forEach(k=>{
     const d=fmtShort(k);
-    CLASS_IDS.forEach(id=>{
+    getClassIds().forEach(id=>{
       const clsData=ls.get(KEY_SB(id),{});
       const sessions=(clsData[k]?.sessions)||[];
       sessions.forEach(sess=>{
@@ -876,7 +934,7 @@ function downloadCSV(keys){
     });
   });
   // 全クラスの最大人数
-  const maxTotal=Math.max(...CLASS_IDS.map(id=>getMeta().totals[id]||30));
+  const maxTotal=Math.max(...getClassIds().map(id=>getMeta().totals[id]||30));
   let csv='\uFEFF番号,'+cols.map(c=>csvCell(c.label)).join(',')+'\n';
   for(let i=1;i<=maxTotal;i++){
     const row=[String(i)];
@@ -897,14 +955,14 @@ function csvCell(s){if(!s)return'';return(s.includes(',')||s.includes('"'))?'"'+
 /* ════ 履歴 ════ */
 function openHistory(){
   const allKeys=new Set();
-  CLASS_IDS.forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>allKeys.add(k)));
+  getClassIds().forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>allKeys.add(k)));
   const keys=[...allKeys].sort().reverse();
   const list=document.getElementById('histList');
   if(!keys.length){list.innerHTML='<div class="hist-empty">まだ記録がありません</div>';}
   else{
     list.innerHTML=keys.map(k=>{
       let html=`<div class="hist-day"><div class="hist-date">${fmtJP(k)}</div>`;
-      CLASS_IDS.forEach(id=>{
+      getClassIds().forEach(id=>{
         const sessions=(ls.get(KEY_SB(id),{})[k]?.sessions)||[];
         if(!sessions.length)return;
         html+=`<div class="hist-cls">${getClassName(id)}</div>`;
@@ -929,7 +987,7 @@ function exportJSON(){
   const payload={version:1,exported:new Date().toISOString(),data:{}};
   payload.data[KEY_META]=ls.get(KEY_META,{});
   payload.data[KEY_CKPTS]=ls.get(KEY_CKPTS,DEFAULT_CKPTS);
-  CLASS_IDS.forEach(id=>{
+  getClassIds().forEach(id=>{
     payload.data[KEY_SB(id)]=ls.get(KEY_SB(id),{});
     payload.data[KEY_NAMES(id)]=ls.get(KEY_NAMES(id),{});
   });
@@ -951,9 +1009,9 @@ function handleImport(e){
     const imp=payload.data;
     // 日付重複チェック
     const impKeys=new Set();
-    CLASS_IDS.forEach(id=>Object.keys(imp[KEY_SB(id)]||{}).forEach(k=>impKeys.add(k)));
+    getClassIds().forEach(id=>Object.keys(imp[KEY_SB(id)]||{}).forEach(k=>impKeys.add(k)));
     const curKeys=new Set();
-    CLASS_IDS.forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>curKeys.add(k)));
+    getClassIds().forEach(id=>Object.keys(ls.get(KEY_SB(id),{})).forEach(k=>curKeys.add(k)));
     const overlap=[...impKeys].filter(k=>curKeys.has(k));
     let msg=`インポート内容: ${impKeys.size}件の日付データ`;
     if(overlap.length) msg+=`\n重複: ${overlap.length}件（インポート側で上書き）`;
@@ -962,7 +1020,7 @@ function handleImport(e){
     const merge=(cur,imp)=>Object.assign({},cur,imp);
     if(imp[KEY_META])   ls.set(KEY_META,imp[KEY_META]);
     if(imp[KEY_CKPTS])  ls.set(KEY_CKPTS,imp[KEY_CKPTS]);
-    CLASS_IDS.forEach(id=>{
+    getClassIds().forEach(id=>{
       if(imp[KEY_SB(id)])    ls.set(KEY_SB(id),   merge(ls.get(KEY_SB(id),{}),   imp[KEY_SB(id)]));
       if(imp[KEY_NAMES(id)]) ls.set(KEY_NAMES(id), merge(ls.get(KEY_NAMES(id),{}),imp[KEY_NAMES(id)]));
     });
@@ -974,7 +1032,49 @@ function handleImport(e){
 
 /* ════ ユーティリティ ════ */
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+
+/* ══ アーカイブ（完結） ══ */
+function openSbAddBtn(){
+  if(typeof openSbAdd==='function')openSbAdd();
+  else if(typeof openAddOv==='function')openAddOv();
+}
+function openArchiveMode(){
+  const allActive=getSbAllActive();
+  if(!allActive.length){showToast('完結できるセッションがありません');return;}
+  // 現在選択中セッション名を取得
+  const cur=allActive.find(x=>x.sess.id===session);
+  const sessName=cur?cur.sess.name:'セッションを選択してください';
+  if(!cur){
+    // セッションが未選択の場合は最初のものを選ぶ
+    session=allActive[0].sess.id;
+    renderSbToolbar();buildGrid();
+    showToast('完結するセッションをタブで選んでから再度タップしてください');
+    return;
+  }
+  const absCount=Object.values(cur.sess.grades||{}).filter(g=>g==='abs').length;
+  let msg=`「${sessName}」を完結しますか？`;
+  if(absCount>0)msg+=`\n（欠席者${absCount}人は「未提出」に変換されます）`;
+  if(!confirm(msg))return;
+  doArchiveComplete(cur.sess);
+}
+function doArchiveComplete(sess){
+  const data=ls.get(KEY_SB(classId),{});
+  let found=null;
+  for(const dk of Object.keys(data)){
+    const f=(data[dk].sessions||[]).find(s=>s.id===sess.id);
+    if(f){found=f;break;}
+  }
+  if(!found)return;
+  Object.keys(found.grades||{}).forEach(n=>{if(found.grades[n]==='abs')found.grades[n]='none';});
+  Object.keys(found.scores||{}).forEach(n=>{if(found.scores[n]==='abs')delete found.scores[n];});
+  found.closed=true;
+  ls.set(KEY_SB(classId),data);
+  const allActive=getSbAllActive();
+  if(session===sess.id)session=allActive.length?allActive[0].sess.id:null;
+  renderSbToolbar();buildGrid();
+  showToast(`「${sess.name}」を完結しました`);
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 
 /* モーダル外タップ */
 [['histOv',closeHistory],['settingsOv',closeSettings],['actionOv',closeAction],['evalOv',closeEval],['csvNamesOv',closeCsvNames]].forEach(([id,fn])=>{
@@ -987,6 +1087,18 @@ initDate();
 renderClassTabs();
 renderSbToolbar();
 buildGrid();
+
+// 初回起動ガイド
+const _hasAnyName=Object.keys(ls.get(KEY_NAMES('A'),{})).length+
+                  Object.keys(ls.get(KEY_NAMES('B'),{})).length+
+                  Object.keys(ls.get(KEY_NAMES('C'),{})).length;
+if(_hasAnyName===0){
+  setTimeout(()=>{
+    if(confirm('はじめてのご利用ですか？\n\n⚙設定からクラス名と人数を変更できます。\n各クラスの「名前CSV」ボタンから生徒名を一括登録できます。\n\n今すぐ設定を開きますか？')){
+      openSettings();
+    }
+  },500);
+}
 </script>
 </body>
 </html>
