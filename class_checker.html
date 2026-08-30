@@ -8,6 +8,8 @@
   @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
   :root{--bg:#f5f0e8;--paper:#fffef9;--ink:#1a1208;--ink-light:#6b5e4a;--grid-line:#d4cfc5;--shadow:rgba(30,20,10,0.12);--mode-accent:#c84b2f;--mode-bg:#f5f0e8;--mode-header:#fffef9;--mode-sub:#d4cfc5;--green:#2e7d4f;}
   *{box-sizing:border-box;margin:0;padding:0;}
+  button{touch-action:manipulation;}
+  .num-btn,.tab-btn,.btn,.sb-session-tab,.sb-add-tab,.btn-archive,.hdr-hamburger,.drawer-item,.sb-act-btn{touch-action:manipulation;-webkit-touch-callout:none;}
   body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--mode-bg);min-height:100vh;color:var(--ink);transition:background .25s;padding-bottom:130px;}
   .header{background:var(--mode-header);border-bottom:3px solid var(--ink);position:sticky;top:0;z-index:100;box-shadow:0 4px 0 var(--shadow);transition:background .25s;}
   /* タブ非表示（ハンバーガーに移動） */
@@ -17,7 +19,12 @@
   /* ─── ハンバーガーメニュー ─── */
   .hdr-bar{display:flex;align-items:center;padding:10px 14px 8px;gap:10px;}
   .hdr-mode{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--mode-accent);border:1.5px solid var(--mode-accent);padding:2px 8px;flex-shrink:0;}
-  .hdr-date{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--ink);flex:1;}
+  .hdr-date{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--ink);flex:1;display:flex;align-items:center;gap:4px;min-width:0;}
+  .date-nav{width:30px;height:34px;border:1.5px solid var(--grid-line);background:var(--paper);font-size:12px;cursor:pointer;color:var(--ink-light);flex-shrink:0;padding:0;font-family:sans-serif;}
+  .date-nav:active{background:var(--bg);}
+  #dateStr{cursor:pointer;white-space:nowrap;}
+  #dateStr.past{color:#c0392b;text-decoration:underline;}
+  .date-today-btn{height:26px;padding:0 8px;border:1.5px solid #c0392b;background:#c0392b;color:#fff;font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;}
   .hdr-date .weekday{font-size:11px;font-weight:400;color:var(--mode-accent);margin-left:5px;font-family:'Zen Kaku Gothic New',sans-serif;}
   .hdr-hamburger{width:44px;height:44px;border:2px solid var(--ink);background:var(--paper);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;box-shadow:2px 2px 0 var(--ink);-webkit-tap-highlight-color:transparent;}
   .hdr-hamburger span{display:block;width:20px;height:2px;background:var(--ink);}
@@ -182,10 +189,6 @@
   .sb-toolbar{padding:8px 12px;border-bottom:1px solid var(--mode-sub);display:flex;align-items:center;gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .sb-session-tab{flex-shrink:0;padding:5px 12px;border:2px solid var(--grid-line);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;transition:all .1s;}
   .sb-session-tab.act{background:#7b3fa0;color:white;border-color:#7b3fa0;}
-  .sb-session-tab.archive-mode{border-style:dashed;border-color:#c84b2f;color:#c84b2f;}
-  .sb-session-tab.act.archive-mode{background:#c84b2f;border-color:#c84b2f;border-style:solid;color:white;}
-  .sb-archive-btn{flex-shrink:0;padding:5px 10px;border:2px solid var(--grid-line);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-light);-webkit-tap-highlight-color:transparent;white-space:nowrap;}
-  .sb-archive-btn.on{background:#c84b2f;color:white;border-color:#c84b2f;}
   /* セッションアクションシート */
   .sb-action-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,8,.6);z-index:350;align-items:flex-end;}
   .sb-action-overlay.open{display:flex;}
@@ -478,7 +481,14 @@
 <div class="header">
   <div class="hdr-bar">
     <span class="hdr-mode" id="modeLabel">宿題</span>
-    <div class="hdr-date"><span id="dateStr">--</span><span class="weekday" id="weekdayStr">--</span></div>
+    <div class="hdr-date">
+      <button class="date-nav" onclick="requestDateShift(-1)">◀</button>
+      <span id="dateStr" onclick="requestDatePick()">--</span>
+      <button class="date-nav" onclick="requestDateShift(1)">▶</button>
+      <span class="weekday" id="weekdayStr">--</span>
+      <button class="date-today-btn" id="btnToday" onclick="goToday()" style="display:none">今日へ</button>
+      <input type="date" id="datePicker" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="onDatePicked(event)">
+    </div>
     <button class="hdr-hamburger" id="hamburgerBtn" onclick="openDrawer()">
       <span></span><span></span><span></span>
     </button>
@@ -522,6 +532,7 @@
 
 <div class="bottom-bar">
   <button class="btn btn-csv" id="btnCsv" onclick="saveAndExportToday()">💾 保存 &amp; CSV</button>
+  <button class="btn btn-archive" id="btnArchive" onclick="openArchiveMode()" style="display:none;background:#5a2d80;color:white;border-color:#5a2d80;">📦 完結</button>
 </div>
 
 <!-- ドロワーオーバーレイ -->
@@ -569,6 +580,15 @@
     </button>
     <button class="drawer-item" onclick="drawerHelp()">
       <span class="di-icon">❓</span><span class="di-label">使い方</span>
+    </button>
+  </div>
+  <div class="drawer-section">
+    <div class="drawer-section-label">セキュリティ・移動</div>
+    <button class="drawer-item" onclick="closeDrawer();lockNow()">
+      <span class="di-icon">🔒</span><span class="di-label">今すぐロック</span>
+    </button>
+    <button class="drawer-item" onclick="goHome()">
+      <span class="di-icon">🏠</span><span class="di-label">ホームに戻る</span>
     </button>
   </div>
 </div>
@@ -679,6 +699,9 @@
     <div class="help-section">
       <div class="help-section-title" style="border-color:#1a1208">🔒 パスワード</div>
       <div class="help-item">名前編集・タブ切替・履歴閲覧に必要です</div>
+      <div class="help-item">一度認証すると<b>20分間</b>は再入力不要です</div>
+      <div class="help-item">ヘッダーの日付横 ◀▶ で過去の記録を修正できます（日付タップでカレンダー）。赤字表示中は過去日編集モード、「今日へ」で戻ります</div>
+      <div class="help-item">離席するときは メニュー→「🔒 今すぐロック」</div>
       <div class="help-item">パスワードは担任の先生にご確認ください</div>
     </div>
   </div>
@@ -807,8 +830,9 @@
   <div class="hw-flw-box">
     <div class="hw-flw-who" id="hwFlwWho"></div>
     <div class="hw-flw-date" id="hwFlwDate"></div>
-    <button class="hw-flw-btn hw-flw-resolve" onclick="resolveFlw(true)">○ 今日提出した（解決）</button>
-    <button class="hw-flw-btn hw-flw-clear"   onclick="resolveFlw(false)">△ フラグだけ消す</button>
+    <button class="hw-flw-btn hw-flw-resolve" onclick="resolveFlw('both')">○ 忘れたと今日の分を提出</button>
+    <button class="hw-flw-btn hw-flw-resolve" onclick="resolveFlw('today')">○ 今日の分だけ提出</button>
+    <button class="hw-flw-btn hw-flw-clear"   onclick="resolveFlw('prev')">○ 昨日の分だけ提出</button>
     <button class="hw-flw-btn hw-flw-cancel"  onclick="closeFlw()">キャンセル</button>
   </div>
 </div>
@@ -890,12 +914,20 @@
 </div>
 
 <script>
+/* ══ 環境チェック ══ */
+try{
+  localStorage.setItem('_test','1');
+  localStorage.removeItem('_test');
+}catch(e){
+  alert('このブラウザではデータ保存ができません。\nシークレット/プライベートモードを解除してください。');
+}
+
 /* ══ 定数 ══ */
 const TOTAL=30,WEEKDAYS=['日','月','火','水','木','金','土'],PRIORITY_N=5;
 const KEY_NAMES='cc_names_v1',KEY_HW='cc_hw_v3',KEY_SH='cc_sh_v1',KEY_MM='cc_mm_v1',KEY_CKPTS='cc_ckpts_v1';
 const KEY_HW_FLW='cc_hw_flw_v1'; // {num:{date,resolved}} 要フォローフラグ
 const KEY_SB='cc_sb_v1';       // 提出物: { 'YYYY-MM-DD': { sessions:[{id,name,grades:{num:grade}},...] }, master:['算数ふりかえり',...] }
-const KEY_SB_MASTER='cc_sb_master_v1'; // ['算数ふりかえり',...]
+// ['算数ふりかえり',...]
 const HW_NONE=0,HW_SUB=1,HW_ABS=2,HW_FLW=3; // FLW=要フォロー（翌日繰り越し）
 // 提出物評価サイクル: 0=未チェック→B→B+→A→C→未提出→欠席→B…
 // 格納値: ''=未, 'B','Bp','A','C','none','abs'
@@ -964,24 +996,90 @@ let memoTarget=null,memoDate=null,memoSubtab='check';
 let ckSubject=null,ckItems=[];
 let sbSession=null;
 let sbActionTarget=null;
-let sbArchiveMode=false; // アーカイブモード
 let whTypeId=null;  // 現在選択中の週宿題種類id
 
 /* ══ ストレージ ══ */
 const ls={
-  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){console.warn('ls.get失敗',k,e);return def;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('ls.set失敗',k,e);showToast('保存に失敗しました（容量超過の可能性）');}},
 };
 
 /* ══ 日付 ══ */
-function today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+let workDate=null; // null=今日 / 'YYYY-MM-DD'=過去日編集中
+function realToday(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function today(){return workDate||realToday();}
 function fmtJP(k){const[y,m,d]=k.split('-');return`${y}年${m}月${d}日（${WEEKDAYS[new Date(+y,+m-1,+d).getDay()]}）`;}
 function fmtShort(k){const[,m,d]=k.split('-');return`${+m}/${+d}`;}
-function initDate(){const d=new Date(),[y,m,dy]=today().split('-');document.getElementById('dateStr').textContent=`${y}.${m}.${dy}`;document.getElementById('weekdayStr').textContent=WEEKDAYS[d.getDay()]+'曜日';}
+function initDate(){
+  const t=today();
+  const[y,m,dy]=t.split('-');
+  const d=new Date(+y,+m-1,+dy);
+  const ds=document.getElementById('dateStr');
+  ds.textContent=`${y}.${m}.${dy}`;
+  document.getElementById('weekdayStr').textContent=WEEKDAYS[d.getDay()]+'曜日';
+  const isPast=(t!==realToday());
+  ds.classList.toggle('past',isPast);
+  document.getElementById('btnToday').style.display=isPast?'':'none';
+}
+
+/* ══ 日付変更（過去に遡って記録） ══ */
+function requestDateShift(delta){
+  if(isAuthValid()){shiftDate(delta);return;}
+  openPw('date_'+delta,'日付の変更','教員認証が必要です');
+}
+function requestDatePick(){
+  if(isAuthValid()){openDatePicker();return;}
+  openPw('date_pick','日付の変更','教員認証が必要です');
+}
+function shiftDate(delta){
+  const[y,m,d]=today().split('-').map(Number);
+  const dt=new Date(y,m-1,d+delta);
+  setWorkDate(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`);
+}
+function setWorkDate(dateStr){
+  workDate=(dateStr===realToday())?null:dateStr;
+  initDate();
+  doSwitch(mode); // 全タブ再描画
+  if(workDate)showToast('📅 '+fmtShort(workDate)+' の記録を編集中');
+}
+function goToday(){workDate=null;initDate();doSwitch(mode);showToast('今日に戻りました');}
+function openDatePicker(){
+  const dp=document.getElementById('datePicker');
+  dp.value=today();
+  if(dp.showPicker)dp.showPicker();else dp.click();
+}
+function onDatePicked(e){if(e.target.value)setWorkDate(e.target.value);}
 
 /* ══ PW ══ */
+const AUTH_MINUTES=20; // 認証の有効時間（分）
+function isAuthValid(){
+  try{
+    const raw=sessionStorage.getItem('cc_auth');
+    if(!raw)return false;
+    const until=parseInt(raw,10);
+    return Date.now()<until;
+  }catch{return false;}
+}
+function setAuth(){
+  try{sessionStorage.setItem('cc_auth',String(Date.now()+AUTH_MINUTES*60*1000));}catch{}
+}
+function clearAuth(){
+  try{sessionStorage.removeItem('cc_auth');}catch{}
+}
+function lockNow(){
+  clearAuth();
+  workDate=null;initDate(); // 過去日編集を解除してから
+  doSwitch('hw');
+  showToast('🔒 ロックしました');
+}
+function goHome(){
+  clearAuth();
+  location.href='./launcher.html';
+}
 function getDailyPw(){const d=new Date();return String((d.getMonth()+1)+d.getDate()).padStart(2,'0');}
 function openPw(purpose,title,sub){
+  // 認証セッションが有効なら再入力せず即実行
+  if(isAuthValid()){pwPurpose=purpose;onPwOk();return;}
   pwPurpose=purpose;pwBuf='';updateDots();
   document.getElementById('pwTitle').textContent='🔒 '+title;
   document.getElementById('pwSub').textContent=sub;
@@ -996,7 +1094,7 @@ function pwKey(k){
   if(pwBuf.length===4){
     setTimeout(()=>{
       const suffix=getDailyPw();
-      if(pwBuf.slice(2)===suffix){document.getElementById('pwOverlay').classList.remove('open');onPwOk();}
+      if(pwBuf.slice(2)===suffix){setAuth();document.getElementById('pwOverlay').classList.remove('open');onPwOk();}
       else{document.getElementById('pwError').textContent='パスワードが違います';pwBuf='';updateDots();}
     },150);
   }
@@ -1006,6 +1104,8 @@ function updateDots(){for(let i=0;i<4;i++){const d=document.getElementById('d'+i
 function onPwOk(){
   if(pwPurpose==='edit'){editMode=true;buildGrid();showToast('名前編集モードに入りました');}
   else if(pwPurpose==='history'){openHistory();}
+  else if(pwPurpose==='date_pick'){openDatePicker();}
+  else if(pwPurpose.startsWith('date_')){shiftDate(parseInt(pwPurpose.slice(5),10));}
   else if(pwPurpose.startsWith('sw_')){doSwitch(pwPurpose.slice(3));}
 }
 
@@ -1043,6 +1143,9 @@ function doSwitch(m){
 /* ══ グリッド描画 ══ */
 function buildGrid(){
   const grid=document.getElementById('numGrid');grid.innerHTML='';
+  // 提出物モードのときだけアーカイブボタンを表示
+  const archBtn=document.getElementById('btnArchive');
+  if(archBtn)archBtn.style.display=(mode==='sb')?'':'none';
   let info='';
   if(mode==='hw'){
     const data=ls.get(KEY_HW,{});const day=data[today()]||{};
@@ -1257,23 +1360,30 @@ function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;
 
 // 席替えレイアウトから{cols, nums:[num|null,...]}を返す
 function getLayoutInfo(){
-  const saved=ls.get(KEY_LAYOUT,null);
-  if(!saved||!saved.seats||!saved.seats.length) return null;
-  const cols=saved.cols||5;
-  const nums=saved.seats.map(s=>s.empty?null:(s.num||null));
-  return {cols,nums};
+  try{
+    const saved=ls.get(KEY_LAYOUT,null);
+    if(!saved||!saved.seats||!saved.seats.length) return null;
+    const cols=Math.max(1,Math.min(12,saved.cols||5));
+    const nums=saved.seats.map(s=>s.empty?null:(s.num||null));
+    return {cols,nums};
+  }catch{return null;}
 }
 
 // グリッドに席替えレイアウトを適用
 function applyLayoutToGrid(grid, buildCardFn){
+  // 名前が1件も登録されていなければ席替えレイアウトを無視して5列×30表示
+  const hasNames=Object.keys(names).length>0;
+  if(!hasNames){
+    document.getElementById('numGrid').style.gridTemplateColumns='repeat(5,1fr)';
+    return null;
+  }
   const layout=getLayoutInfo();
   if(!layout){
-    // 未設定: 従来通り5列
     document.getElementById('numGrid').style.gridTemplateColumns='repeat(5,1fr)';
-    return null; // 通常ループに任せる
+    return null;
   }
   grid.style.gridTemplateColumns=`repeat(${layout.cols},1fr)`;
-  return layout.nums; // 呼び元でこれをループ
+  return layout.nums;
 }
 
 /* ══ 宿題 ══ */
@@ -1310,20 +1420,42 @@ function openFlw(n){
   document.getElementById('hwFlwOverlay').classList.add('open');
 }
 function closeFlw(){document.getElementById('hwFlwOverlay').classList.remove('open');hwFlwTarget=null;}
-function resolveFlw(submit){
+function resolveFlw(mode){
   if(hwFlwTarget===null)return;
+  const n=hwFlwTarget;
   const flwData=ls.get(KEY_HW_FLW,{});
-  flwData[hwFlwTarget]={...flwData[hwFlwTarget],resolved:true};
+  const hwData=ls.get(KEY_HW,{});
+  const t=today();
+  const prevDate=flwData[n]?.date; // フォローが記録された日付
+
+  // フラグを解決済みに
+  flwData[n]={...flwData[n],resolved:true};
   ls.set(KEY_HW_FLW,flwData);
-  if(submit){
-    // 今日の宿題を提出扱いにする
-    const data=ls.get(KEY_HW,{}),t=today();
-    if(!data[t])data[t]={};
-    data[t][hwFlwTarget]=HW_SUB;
-    ls.set(KEY_HW,data);
-    showToast(`${hwFlwTarget}番 今日提出 ○ に更新しました`);
-  } else {
-    showToast(`${hwFlwTarget}番 フォローフラグを解除しました`);
+
+  if(mode==='both'){
+    // 今日の提出○ + 昨日（記録日）の提出も○に変換
+    if(!hwData[t])hwData[t]={};
+    hwData[t][n]=HW_SUB;
+    if(prevDate&&prevDate!==t){
+      if(!hwData[prevDate])hwData[prevDate]={};
+      hwData[prevDate][n]=HW_SUB;
+    }
+    ls.set(KEY_HW,hwData);
+    showToast(`${n}番 昨日・今日ともに○にしました`);
+  } else if(mode==='today'){
+    // 今日の提出○のみ
+    if(!hwData[t])hwData[t]={};
+    hwData[t][n]=HW_SUB;
+    ls.set(KEY_HW,hwData);
+    showToast(`${n}番 今日分を○にしました`);
+  } else if(mode==='prev'){
+    // 記録日（昨日以前）の提出○のみ、今日はそのまま
+    if(prevDate&&prevDate!==t){
+      if(!hwData[prevDate])hwData[prevDate]={};
+      hwData[prevDate][n]=HW_SUB;
+      ls.set(KEY_HW,hwData);
+    }
+    showToast(`${n}番 昨日分を○にしました`);
   }
   closeFlw();buildGrid();
 }
@@ -1458,46 +1590,20 @@ function renderSbToolbar(){
   allActive.forEach(({sess,dateKey})=>{
     const tab=el('button','sb-session-tab');
     if(sess.id===sbSession)tab.classList.add('act');
-    if(sbArchiveMode)tab.classList.add('archive-mode');
     const dateTag=dateKey!==today()?` (${fmtShort(dateKey)})`:'';
     tab.textContent=sess.name+(sess.kan?` [${sess.kan.slice(0,2)}]`:'')+dateTag;
     tab.addEventListener('click',()=>{
-      if(sbArchiveMode){
-        sbSession=sess.id;
-        sbArchiveConfirm(sess);
-      } else {
-        sbSession=sess.id;renderSbToolbar();buildGrid();
-      }
+      sbSession=sess.id;renderSbToolbar();buildGrid();
     });
     row.appendChild(tab);
   });
-  // ＋追加ボタン
   const addBtn=el('button','sb-add-tab');addBtn.textContent='+';
-  addBtn.addEventListener('click',()=>{sbArchiveMode=false;renderSbToolbar();openSbAdd();});
+  addBtn.addEventListener('click',openSbAddBtn);
   row.appendChild(addBtn);
-  // 📦アーカイブボタン
-  const archBtn=el('button','sb-archive-btn');
-  archBtn.textContent='📦';
-  archBtn.title='アーカイブモード（タップで完結）';
-  if(sbArchiveMode)archBtn.classList.add('on');
-  archBtn.addEventListener('click',()=>{sbArchiveMode=!sbArchiveMode;renderSbToolbar();});
-  row.appendChild(archBtn);
-  // アクティブセッションが完結済みなら切り替え
   const activeIds=allActive.map(x=>x.sess.id);
   if(sbSession&&!activeIds.includes(sbSession)){
     sbSession=allActive.length?allActive[0].sess.id:null;
   }
-}
-
-function sbArchiveConfirm(sess){
-  const absCount=Object.values(sess.grades||{}).filter(g=>g==='abs').length;
-  const msg=absCount>0
-    ?`「${sess.name}」を完結しますか？\n欠席者${absCount}人は「未提出」に変換されます。`
-    :`「${sess.name}」を完結しますか？`;
-  if(!confirm(msg)){renderSbToolbar();buildGrid();return;}
-  sbActionTarget=sess.id;
-  completeSbSession();
-  sbArchiveMode=false;
 }
 function removeSbSession(id){
   const data=ls.get(KEY_SB,{});
@@ -2320,7 +2426,49 @@ function drawerHelp(){
 function openHelp(){document.getElementById('helpOverlay').classList.add('open');}
 function closeHelp(){document.getElementById('helpOverlay').classList.remove('open');}
 
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+
+/* ══ アーカイブ（完結） ══ */
+function openSbAddBtn(){
+  if(typeof openSbAdd==='function')openSbAdd();
+  else if(typeof openAddOv==='function')openAddOv();
+}
+function openArchiveMode(){
+  const allActive=getSbAllActive();
+  if(!allActive.length){showToast('完結できるセッションがありません');return;}
+  // 現在選択中セッション名を取得
+  const cur=allActive.find(x=>x.sess.id===sbSession);
+  const sessName=cur?cur.sess.name:'セッションを選択してください';
+  if(!cur){
+    // セッションが未選択の場合は最初のものを選ぶ
+    sbSession=allActive[0].sess.id;
+    renderSbToolbar();buildGrid();
+    showToast('完結するセッションをタブで選んでから再度タップしてください');
+    return;
+  }
+  const absCount=Object.values(cur.sess.grades||{}).filter(g=>g==='abs').length;
+  let msg=`「${sessName}」を完結しますか？`;
+  if(absCount>0)msg+=`\n（欠席者${absCount}人は「未提出」に変換されます）`;
+  if(!confirm(msg))return;
+  doArchiveComplete(cur.sess);
+}
+function doArchiveComplete(sess){
+  const data=ls.get(KEY_SB,{});
+  let found=null;
+  for(const dk of Object.keys(data)){
+    const f=(data[dk].sessions||[]).find(s=>s.id===sess.id);
+    if(f){found=f;break;}
+  }
+  if(!found)return;
+  Object.keys(found.grades||{}).forEach(n=>{if(found.grades[n]==='abs')found.grades[n]='none';});
+  Object.keys(found.scores||{}).forEach(n=>{if(found.scores[n]==='abs')delete found.scores[n];});
+  found.closed=true;
+  ls.set(KEY_SB,data);
+  const allActive=getSbAllActive();
+  if(sbSession===sess.id)sbSession=allActive.length?allActive[0].sess.id:null;
+  renderSbToolbar();buildGrid();
+  showToast(`「${sess.name}」を完結しました`);
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 
 /* モーダル外タップ */
 [['histModal',closeHistory],['neOverlay',closeNe],['memoOverlay',closeMemo],['cfgOverlay',closeCfg],['sbAddOverlay',closeSbAdd],['sbEvalOverlay',closeSbEval],['seatCsvOv',closeSeatCsv],['seatAssignOv',closeSeatAssign],['whAddOverlay',closeWhAdd],['sbActionOverlay',closeSbAction],['helpOverlay',closeHelp],['scoreOverlay',closeScore],['hwFlwOverlay',closeFlw]].forEach(([id,fn])=>{
@@ -2336,6 +2484,15 @@ const _whT=ls.get(KEY_WH_TYPES,[]);
 if(_whT.length)whTypeId=_whT[0].id;
 initDate();
 doSwitch('hw');
+
+// 初回起動ガイド：名前が1件も登録されていない場合
+if(Object.keys(names).length===0){
+  setTimeout(()=>{
+    if(confirm('はじめてのご利用ですか？\n\n名前を登録すると、各タブで生徒の名前が表示されます。\n\n「メニュー → 名前編集」から登録できます。\n\n今すぐ登録しますか？')){
+      requestEditMode();
+    }
+  },500);
+}
 </script>
 </body>
 </html>

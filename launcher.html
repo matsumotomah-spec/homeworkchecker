@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>クラス記録ツール ホーム</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+  :root{
+    --bg:#f5f0e8;--paper:#fffef9;--ink:#1a1208;--ink-light:#6b5e4a;
+    --grid-line:#d4cfc5;--shadow:rgba(26,18,8,.12);
+    --cc:#c84b2f;--mc:#7b3fa0;--util:#1a3a6b;--danger:#c0392b;--green:#2e7d4f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);padding-bottom:60px;}
+  .bg-lines{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,var(--grid-line) 39px,var(--grid-line) 40px);}
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:26px 18px;}
+
+  .hero{margin-bottom:22px;}
+  .hero-title{font-size:22px;font-weight:900;letter-spacing:.04em;}
+  .hero-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-light);margin-top:4px;}
+
+  .section-label{font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--ink-light);margin:22px 0 10px;border-left:3px solid var(--ink);padding-left:8px;}
+
+  /* アプリカード */
+  .card{display:block;width:100%;text-align:left;background:var(--paper);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:16px 16px 14px;margin-bottom:14px;cursor:pointer;text-decoration:none;color:var(--ink);transition:transform .1s,box-shadow .1s;font-family:'Zen Kaku Gothic New',sans-serif;}
+  .card:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink);}
+  .card-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .card-icon{font-size:24px;}
+  .card-title{font-size:16px;font-weight:900;flex:1;}
+  .card-badge{font-size:10px;font-weight:700;padding:2px 8px;border:1.5px solid var(--green);color:var(--green);}
+  .card-badge.none{border-color:var(--grid-line);color:var(--ink-light);}
+  .card-desc{font-size:12px;color:var(--ink-light);line-height:1.6;}
+  .card.cc{border-left:8px solid var(--cc);}
+  .card.mc{border-left:8px solid var(--mc);}
+
+  /* ユーティリティボタン */
+  .util-btn{display:block;width:100%;height:52px;background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;text-align:left;padding:0 16px;color:var(--ink);}
+  .util-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .util-btn.primary{background:var(--util);color:#fff;border-color:var(--util);}
+  .util-btn.danger{color:var(--danger);border-color:var(--danger);}
+
+  /* モーダル */
+  .ov{display:none;position:fixed;inset:0;background:rgba(26,18,8,.72);z-index:200;align-items:center;justify-content:center;padding:16px;}
+  .ov.open{display:flex;}
+  .box{background:var(--paper);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);width:100%;max-width:420px;max-height:86vh;overflow-y:auto;padding:20px 18px 18px;}
+  .box-title{font-size:15px;font-weight:900;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+  .box-close{font-size:22px;cursor:pointer;color:var(--ink-light);background:none;border:none;padding:2px 8px;}
+  .box-desc{font-size:12px;color:var(--ink-light);line-height:1.7;margin-bottom:14px;}
+
+  .row-btn{display:flex;align-items:center;width:100%;min-height:46px;border:2px solid var(--ink);background:var(--paper);font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;padding:8px 14px;text-align:left;color:var(--ink);}
+  .row-btn:active{background:var(--bg);}
+  .row-btn.green{color:var(--green);border-color:var(--green);}
+
+  .chk-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--grid-line);font-size:13px;font-weight:700;}
+  .chk-row input{width:20px;height:20px;}
+  .chk-sub{font-size:11px;color:var(--ink-light);font-weight:400;margin-left:auto;}
+
+  .sel{width:100%;height:44px;border:2px solid var(--ink);background:var(--bg);font-family:'Zen Kaku Gothic New',sans-serif;font-size:14px;font-weight:700;padding:0 10px;margin-bottom:10px;color:var(--ink);}
+
+  .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;font-size:13px;font-weight:700;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+
+  .footer-note{font-size:10px;color:var(--ink-light);text-align:center;margin-top:26px;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="bg-lines"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-title">🏫 クラス記録ツール</div>
+    <div class="hero-date" id="heroDate">--</div>
+  </div>
+
+  <div class="section-label">アプリ</div>
+
+  <a class="card cc" href="./class_checker.html">
+    <div class="card-head">
+      <span class="card-icon">📝</span>
+      <span class="card-title">クラスチェッカー</span>
+      <span class="card-badge none" id="badgeCc">未記録</span>
+    </div>
+    <div class="card-desc">宿題・週宿題・賞状・メモ・提出物をまとめて記録。自分のクラス用。席替えレイアウトにも対応。</div>
+  </a>
+
+  <a class="card mc" href="./multi_class_checker.html">
+    <div class="card-head">
+      <span class="card-icon">📋</span>
+      <span class="card-title">提出物チェッカー（複数クラス）</span>
+      <span class="card-badge none" id="badgeMc">未記録</span>
+    </div>
+    <div class="card-desc">3クラスを切り替えて提出物を評価。専科・理科の他クラス担当に。</div>
+  </a>
+
+  <a class="card" style="border-left:8px solid var(--util);" href="./shoken_support.html">
+    <div class="card-head">
+      <span class="card-icon">📝</span>
+      <span class="card-title">所見サポート</span>
+      <span class="card-badge none" id="badgeSk">素材集</span>
+    </div>
+    <div class="card-desc">クラスチェッカーの記録から児童ごとのサマリーを表示。メモ・評価・提出率を所見素材としてコピーできます。</div>
+  </a>
+
+  <div class="section-label">データ管理</div>
+
+  <button class="util-btn primary" onclick="exportAll()">💾 まとめてバックアップ（全アプリのデータを1ファイルに）</button>
+  <button class="util-btn" onclick="triggerImport()">📂 バックアップから復元</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+  <button class="util-btn" onclick="openSync()">🔄 名簿シンク（クラスチェッカー → 複数クラス）</button>
+  <button class="util-btn danger" onclick="openReset()">🗓 年度末リセット</button>
+
+  <div class="footer-note">
+    データはこの端末のブラウザ内にのみ保存されます。<br>
+    端末の変更・年度替わりの前には必ずバックアップを取ってください。
+  </div>
+</div>
+
+<!-- 名簿シンク -->
+<div class="ov" id="syncOv">
+  <div class="box">
+    <div class="box-title"><span>🔄 名簿シンク</span><button class="box-close" onclick="closeSync()">×</button></div>
+    <div class="box-desc">クラスチェッカーに登録済みの名前（<b id="syncCount">0</b>件）を、複数クラスチェッカーの指定クラスへコピーします。コピー先の名簿は上書きされます。</div>
+    <select class="sel" id="syncTarget">
+      <option value="A">クラスA へコピー</option>
+      <option value="B">クラスB へコピー</option>
+      <option value="C">クラスC へコピー</option>
+    </select>
+    <button class="row-btn green" onclick="doSync()">✅ コピーを実行</button>
+    <button class="row-btn" onclick="closeSync()">キャンセル</button>
+  </div>
+</div>
+
+<!-- 年度末リセット -->
+<div class="ov" id="resetOv">
+  <div class="box">
+    <div class="box-title"><span>🗓 年度末リセット</span><button class="box-close" onclick="closeReset()">×</button></div>
+    <div class="box-desc">選択したデータを削除します。<b>実行前に必ずバックアップを保存してください。</b>この操作は取り消せません。</div>
+    <button class="row-btn green" onclick="exportAll()">💾 先にバックアップを保存する</button>
+    <div style="height:12px"></div>
+    <div class="chk-row"><input type="checkbox" id="rkRecords" checked><label for="rkRecords">日々の記録</label><span class="chk-sub">宿題・週宿題・賞状・メモ・提出物</span></div>
+    <div class="chk-row"><input type="checkbox" id="rkNames"><label for="rkNames">名簿（両アプリ）</label><span class="chk-sub">来年度も使うなら残す</span></div>
+    <div class="chk-row"><input type="checkbox" id="rkSeat"><label for="rkSeat">席替えレイアウト</label></div>
+    <div class="chk-row"><input type="checkbox" id="rkCkpts"><label for="rkCkpts">観点・週宿題の種類設定</label><span class="chk-sub">通常は残す</span></div>
+    <div style="height:14px"></div>
+    <button class="row-btn" style="color:var(--danger);border-color:var(--danger);" onclick="doReset()">🗑 選択したデータを削除する</button>
+    <button class="row-btn" onclick="closeReset()">キャンセル</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ 環境チェック ══ */
+try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}
+catch(e){alert('このブラウザではデータ保存ができません。\nシークレット/プライベートモードを解除してください。');}
+
+/* ══ キー定義（各アプリと同期させること） ══ */
+const CC_RECORD_KEYS=['cc_hw_v3','cc_hw_flw_v1','cc_wh_v1','cc_sh_v1','cc_mm_v1','cc_sb_v1'];
+const CC_OTHER_KEYS ={names:'cc_names_v1',seat:'cc_seat_layout_v1',ckpts:'cc_ckpts_v1',whTypes:'cc_wh_types_v1'};
+function getMcClasses(){
+  try{
+    const m=JSON.parse(localStorage.getItem('mc_meta_v1')||'{}');
+    return (Array.isArray(m.classIds)&&m.classIds.length)?m.classIds:['A','B','C'];
+  }catch{return ['A','B','C'];}
+}
+function mcRecordKeys(){return getMcClasses().map(id=>`mc_sb_${id}_v1`);}
+function mcNameKeys(){return getMcClasses().map(id=>`mc_names_${id}_v1`);}
+const MC_OTHER_KEYS=['mc_meta_v1','mc_ckpts_v1'];
+function allKeys(){return [...CC_RECORD_KEYS,...Object.values(CC_OTHER_KEYS),...mcRecordKeys(),...mcNameKeys(),...MC_OTHER_KEYS];}
+
+const ls={
+  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){showToast('保存に失敗しました');}},
+  del:(k)=>{try{localStorage.removeItem(k);}catch{}},
+};
+function today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ══ ヘッダー日付・記録バッジ ══ */
+(function init(){
+  const d=new Date();
+  const wd=['日','月','火','水','木','金','土'][d.getDay()];
+  document.getElementById('heroDate').textContent=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${wd}）`;
+  const t=today();
+  // クラスチェッカー：今日の何らかの記録があるか
+  const ccHas=CC_RECORD_KEYS.some(k=>{
+    const data=ls.get(k,{});
+    if(k==='cc_hw_flw_v1')return false; // フラグは日付キーでない
+    return data[t]&&Object.keys(data[t]).length>0;
+  });
+  setBadge('badgeCc',ccHas);
+  // multi：今日のセッションがあるか
+  const mcHas=mcRecordKeys().some(k=>{
+    const data=ls.get(k,{});
+    return data[t]&&(data[t].sessions||[]).length>0;
+  });
+  setBadge('badgeMc',mcHas);
+})();
+function setBadge(id,has){
+  const b=document.getElementById(id);
+  if(has){b.textContent='✓ 今日記録あり';b.classList.remove('none');}
+  else{b.textContent='未記録';b.classList.add('none');}
+}
+
+/* ══ 統合バックアップ ══ */
+function exportAll(){
+  const payload={
+    app:'classroom-suite',
+    version:1,
+    term:'',            // 将来の学期アーカイブ用
+    exported:new Date().toISOString(),
+    data:{},
+  };
+  allKeys().forEach(k=>{
+    const v=localStorage.getItem(k);
+    if(v!==null){try{payload.data[k]=JSON.parse(v);}catch{}}
+  });
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`クラス記録_統合バックアップ_${today()}.json`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('バックアップを保存しました');
+}
+
+/* ══ 統合インポート ══ */
+function triggerImport(){document.getElementById('importFile').value='';document.getElementById('importFile').click();}
+function handleImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    let p;
+    try{p=JSON.parse(ev.target.result);}catch{showToast('読み込みに失敗しました');return;}
+    // 統合形式・各アプリ個別形式の両方を受け付ける
+    const data=p?.data;
+    if(!data){showToast('形式が正しくありません');return;}
+    const keys=Object.keys(data).filter(k=>allKeys().includes(k));
+    if(!keys.length){showToast('取り込めるデータがありません');return;}
+    if(!confirm(`${keys.length}件のデータを取り込みます。\n既存の同名データは上書きされます。\n続けますか？`))return;
+    keys.forEach(k=>ls.set(k,data[k]));
+    showToast(`${keys.length}件を復元しました`);
+    setTimeout(()=>location.reload(),900);
+  };
+  reader.readAsText(file);
+}
+
+/* ══ 名簿シンク ══ */
+function openSync(){
+  const names=ls.get(CC_OTHER_KEYS.names,{});
+  const count=Object.keys(names).length;
+  document.getElementById('syncCount').textContent=count;
+  if(count===0){showToast('クラスチェッカーに名前が登録されていません');return;}
+  // クラス選択肢を動的生成（クラス名も表示）
+  const sel=document.getElementById('syncTarget');sel.innerHTML='';
+  let mcNames={};
+  try{mcNames=(JSON.parse(localStorage.getItem('mc_meta_v1')||'{}').classNames)||{};}catch{}
+  getMcClasses().forEach(id=>{
+    const opt=document.createElement('option');
+    opt.value=id;
+    opt.textContent=`クラス${id}（${mcNames[id]||id+'クラス'}）へコピー`;
+    sel.appendChild(opt);
+  });
+  document.getElementById('syncOv').classList.add('open');
+}
+function closeSync(){document.getElementById('syncOv').classList.remove('open');}
+function doSync(){
+  const target=document.getElementById('syncTarget').value;
+  const names=ls.get(CC_OTHER_KEYS.names,{});
+  const targetKey=`mc_names_${target}_v1`;
+  const existing=Object.keys(ls.get(targetKey,{})).length;
+  if(existing>0&&!confirm(`クラス${target}には既に${existing}件の名前があります。上書きしますか？`))return;
+  ls.set(targetKey,names);
+  closeSync();
+  showToast(`クラス${target}へ${Object.keys(names).length}件コピーしました`);
+}
+
+/* ══ 年度末リセット ══ */
+function openReset(){document.getElementById('resetOv').classList.add('open');}
+function closeReset(){document.getElementById('resetOv').classList.remove('open');}
+function doReset(){
+  const delRecords=document.getElementById('rkRecords').checked;
+  const delNames  =document.getElementById('rkNames').checked;
+  const delSeat   =document.getElementById('rkSeat').checked;
+  const delCkpts  =document.getElementById('rkCkpts').checked;
+  if(!delRecords&&!delNames&&!delSeat&&!delCkpts){showToast('削除対象が選ばれていません');return;}
+  const items=[];
+  if(delRecords)items.push('日々の記録');
+  if(delNames)items.push('名簿');
+  if(delSeat)items.push('席替え');
+  if(delCkpts)items.push('観点設定');
+  if(!confirm(`次のデータを削除します：\n${items.join(' / ')}\n\nバックアップは保存済みですか？\nこの操作は取り消せません。`))return;
+  if(!confirm('本当に削除してよろしいですか？（最終確認）'))return;
+
+  if(delRecords){
+    CC_RECORD_KEYS.forEach(k=>ls.del(k));
+    mcRecordKeys().forEach(k=>ls.del(k));
+  }
+  if(delNames){
+    ls.del(CC_OTHER_KEYS.names);
+    mcNameKeys().forEach(k=>ls.del(k));
+  }
+  if(delSeat)ls.del(CC_OTHER_KEYS.seat);
+  if(delCkpts){
+    ls.del(CC_OTHER_KEYS.ckpts);
+    ls.del(CC_OTHER_KEYS.whTypes);
+    ls.del('mc_ckpts_v1');
+  }
+  closeReset();
+  showToast('削除しました');
+  setTimeout(()=>location.reload(),900);
+}
+
+/* モーダル外タップ */
+[['syncOv',closeSync],['resetOv',closeReset]].forEach(([id,fn])=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fn();});
+});
+</script>
+</body>
+</html>
