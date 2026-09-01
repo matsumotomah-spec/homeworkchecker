@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>Debate Team Shuffle</title>
+<style>
+:root{
+  --bg:#f7f8fb;--card:#fff;--text:#20242c;--muted:#6f7683;--line:#e4e7ee;
+  --accent:#3a72f8;--danger:#d94d4d;--ok:#2c9b63;
+  --teamA:#fff2a8;--teamB:#cfe8ff;--teamC:#d8f3dc;--teamD:#f8d7ea;
+  --shadow:0 10px 30px rgba(35,42,60,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.hidden{display:none!important}
+#portraitGuard{display:none;position:fixed;inset:0;z-index:9999;background:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-size:clamp(28px,5vw,56px);font-weight:800}
+@media (orientation:portrait){#app{display:none}#portraitGuard{display:flex}}
+#app{min-height:100dvh;padding:max(12px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;min-height:54px}
+.themeWrap{flex:1;text-align:center;min-width:0}
+.themeTitle{font-weight:700;color:var(--muted);font-size:clamp(15px,1.8vw,24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.themeVs{font-weight:900;font-size:clamp(28px,4vw,52px);line-height:1.1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gear{width:48px;height:48px;border-radius:16px;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow);font-size:24px;color:#697180}
+.backBtn{min-width:92px;height:48px;border-radius:14px;border:1px solid var(--line);background:#fff;font-weight:700}
+.statRow{display:flex;justify-content:center;gap:14px;color:var(--muted);font-weight:700;margin:4px 0 12px}
+.studentGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(7px,1.1vh,12px);max-width:1040px;margin:0 auto}
+.studentBtn{height:clamp(58px,8.2vh,82px);border:0;border-radius:18px;background:#fff;box-shadow:var(--shadow);font-weight:900;font-size:clamp(24px,3vw,40px);color:var(--text);transition:.15s transform,.15s opacity,.15s background}
+.studentBtn:active{transform:scale(.97)}
+.studentBtn.absent{background:#d9dde5;color:#8b919b;box-shadow:none}
+.bottomArea{display:flex;justify-content:center;margin-top:clamp(10px,1.8vh,18px)}
+.holdBtn{position:relative;overflow:hidden;min-width:min(520px,72vw);height:66px;border:0;border-radius:22px;background:#eef2ff;color:#244cb3;font-weight:900;font-size:clamp(22px,2.8vw,32px);box-shadow:var(--shadow)}
+.holdFill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(58,114,248,.18);pointer-events:none}
+.holdText{position:relative;z-index:1}
+.notice{max-width:920px;margin:14px auto 0;padding:12px 16px;border-radius:14px;background:#fff4f4;color:#9a3737;font-weight:700;text-align:center;border:1px solid #f1cccc}
+.shuffleStage{position:relative;height:calc(100vh - 42px);overflow:hidden}
+.shuffleLabel{position:absolute;top:20px;left:0;right:0;text-align:center;font-size:clamp(30px,4vw,52px);font-weight:900}
+.mixCloud{position:absolute;inset:80px 0 10px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;align-content:center;gap:10px;padding:12px}
+.mixCard{width:70px;height:70px;border-radius:50%;background:#fff;box-shadow:0 8px 22px rgba(20,30,50,.16);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;animation:jitter .55s infinite alternate ease-in-out}
+@keyframes jitter{from{transform:translate(-5px,-3px) rotate(-4deg)}to{transform:translate(6px,4px) rotate(5deg)}}
+.teamsGrid{display:grid;gap:clamp(8px,1.2vw,14px);min-height:0;flex:1}
+.teamsGrid.four{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.teamsGrid.three{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
+.teamCard{border-radius:24px;padding:clamp(8px,1.1vw,12px);box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
+.teamCard.A{background:var(--teamA)}.teamCard.B{background:var(--teamB)}.teamCard.C{background:var(--teamC)}.teamCard.D{background:var(--teamD)}
+.teamHeader{text-align:center;font-weight:1000;font-size:clamp(24px,2.7vw,36px);margin-bottom:8px}
+.roleOps{background:rgba(255,255,255,.68);border-radius:16px;padding:8px 10px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.roleSides{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0;flex:1}
+.roleBox{background:rgba(255,255,255,.74);border-radius:16px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.roleName{font-weight:800;color:#58606d;font-size:clamp(13px,1.5vw,19px);margin-bottom:5px;text-align:center}
+.numberRow{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+.numChip{width:clamp(48px,5vw,68px);height:clamp(48px,5vw,68px);border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:clamp(22px,2.7vw,34px);font-weight:1000;box-shadow:0 4px 14px rgba(50,50,60,.1)}
+.dual{font-size:11px;font-weight:800;color:#6a7280;margin-top:2px;text-align:center}
+.actionBar{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:8px;flex:0 0 auto}
+.primary,.secondary,.danger,.ghost{height:54px;border-radius:16px;padding:0 24px;font-weight:900;border:0;font-size:18px}
+.primary{background:var(--accent);color:#fff}.secondary{background:#fff;color:#2d3646;border:1px solid var(--line)}.danger{background:#fff0f0;color:#b83c3c;border:1px solid #efc3c3}.ghost{background:#eef1f6;color:#4a5362}
+.modeBadge{text-align:center;font-weight:800;color:var(--muted);margin:-2px 0 6px;flex:0 0 auto}
+.resultScreen,.historyScreen{height:calc(100dvh - max(26px,env(safe-area-inset-top)) - max(28px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;min-height:0}
+.shuffleStage{height:calc(100dvh - max(20px,env(safe-area-inset-top)) - max(20px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
+.shuffleStage .teamsGrid{margin-top:62px}
+.shuffleTarget .numChip{opacity:0}
+.shuffleTarget .dual{opacity:0}
+.flyChip{position:fixed;z-index:3000;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:1000;box-shadow:0 10px 28px rgba(30,40,60,.24);pointer-events:none}
+.mixCloud{z-index:10;transition:opacity .25s ease}
+.mixCloud.fade{opacity:0}
+.modal{position:fixed;inset:0;z-index:1000;background:rgba(20,25,35,.38);display:flex;align-items:center;justify-content:center;padding:20px}
+.modalCard{width:min(560px,92vw);background:#fff;border-radius:24px;box-shadow:0 24px 80px rgba(20,20,30,.22);padding:22px}
+.modalTitle{font-size:24px;font-weight:900;margin-bottom:10px}.modalText{color:#5f6673;line-height:1.6;margin-bottom:16px}.modalActions{display:flex;justify-content:flex-end;gap:10px}
+.pinInput,.textInput{width:100%;height:52px;border-radius:14px;border:1px solid #d7dbe3;padding:0 14px;font-size:20px;margin:7px 0 10px;background:#fff}
+.adminWrap{max-width:1100px;margin:0 auto}.adminTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.tabBtn{height:52px;border-radius:15px;border:1px solid var(--line);background:#fff;font-weight:800}.tabBtn.active{background:#eaf0ff;color:#2758cf;border-color:#cbd8ff}
+.panel{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:18px}.panel h2{margin:0 0 14px;font-size:24px}.panel h3{margin:18px 0 8px}
+.historySession{border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.historyHead{display:flex;justify-content:space-between;align-items:center;gap:10px}.roundList{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}.roundBtn{border:1px solid var(--line);border-radius:14px;background:#fafbfe;padding:12px;text-align:left;font-weight:800}
+.summaryTable{width:100%;border-collapse:collapse}.summaryTable th,.summaryTable td{padding:10px;border-bottom:1px solid var(--line);text-align:center}.summaryTable th{color:#666e7b;background:#fafbfc;position:sticky;top:0}.scroll{overflow:auto;max-height:calc(100vh - 220px)}
+.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.settingsBox{border:1px solid var(--line);border-radius:18px;padding:14px}.settingsBox p{color:var(--muted)}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:900px){.teamsGrid{gap:9px}.teamCard{padding:8px;border-radius:18px}.roleOps,.roleSides{gap:6px}.roleBox{padding:6px}.studentGrid{gap:7px}.settingsGrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="portraitGuard">iPadを横向きにしてください</div>
+<div id="app"></div>
+<div id="modalRoot"></div>
+<script>
+(() => {
+'use strict';
+const STUDENTS=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,25,26,27,28,29];
+const STORE_KEY='debate_shuffle_v1';
+const PIN='5329';
+const DEFAULT_THEME={title:'友だちと遊ぶなら',sideA:'外遊び',sideB:'室内遊び'};
+const ROLE_KEYS=['A','B','MOD','TK'];
+let state=loadState();
+let view='prep';
+let provisional=null;
+let historyViewRound=null;
+let adminTab='history';
+let holdTimer=null,holdRAF=null;
+
+function initialState(){return {theme:{...DEFAULT_THEME},absent:[],rounds:[],sessions:[{id:uid(),date:todayISO(),createdAt:Date.now()}],currentSessionId:null};}
+function normalizeState(s){
+ if(!s||typeof s!=='object') s=initialState();
+ s.theme={...DEFAULT_THEME,...(s.theme||{})};
+ s.absent=Array.isArray(s.absent)?s.absent.filter(n=>STUDENTS.includes(n)):[];
+ s.rounds=Array.isArray(s.rounds)?s.rounds:[];
+ s.sessions=Array.isArray(s.sessions)&&s.sessions.length?s.sessions:[];
+ if(!s.currentSessionId){
+   if(!s.sessions.length) s.sessions.push({id:uid(),date:todayISO(),createdAt:Date.now()});
+   s.currentSessionId=s.sessions[s.sessions.length-1].id;
+ }
+ return s;
+}
+function loadState(){try{return normalizeState(JSON.parse(localStorage.getItem(STORE_KEY)));}catch(e){return normalizeState(null)}}
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state));}
+function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmtDate(iso){const [y,m,d]=iso.split('-').map(Number);return `${y}/${m}/${d}`}
+function fmtTime(ts){const d=new Date(ts);return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function currentSession(){return state.sessions.find(s=>s.id===state.currentSessionId)||state.sessions[state.sessions.length-1]}
+function presentStudents(){return STUDENTS.filter(n=>!state.absent.includes(n))}
+function groupCount(n){if(n>=24&&n<=28)return 4;if(n>=15&&n<=23)return 3;return 0}
+function groupSizes(n,g){const base=Math.floor(n/g), rem=n%g;return Array.from({length:g},(_,i)=>base+(i<rem?1:0)).sort((a,b)=>b-a)}
+function roleCountsForSize(size){
+ if(size===5)return {A:2,B:2,MOD:1,TK:0,dualTK:1};
+ if(size===6)return {A:2,B:2,MOD:2,TK:0,dualTK:1};
+ if(size===7)return {A:2,B:2,MOD:2,TK:1,dualTK:0};
+ if(size===8)return {A:3,B:3,MOD:2,TK:0,dualTK:1};
+ if(size===9)return {A:3,B:3,MOD:2,TK:1,dualTK:0};
+ const side=Math.max(2,Math.floor((size-2)/2));return {A:side,B:side,MOD:Math.max(1,size-side*2),TK:0,dualTK:1};
+}
+function lastParticipationRole(student){
+ for(let i=state.rounds.length-1;i>=0;i--){const r=state.rounds[i];const a=r.assignments?.[student];if(a)return a.mainRole;}
+ return null;
+}
+function roleSummary(student){const out={A:0,B:0,MOD:0,TK:0,ABS:0};for(const r of state.rounds){const a=r.assignments?.[student];if(a){out[a.mainRole]=(out[a.mainRole]||0)+1;if(a.dualTK&&a.mainRole!=='TK')out.TK++;}else if(r.present&& !r.present.includes(student)) out.ABS++;}return out;}
+function pairHistory(){const map=new Map();for(const r of state.rounds){for(const g of (r.groups||[])){const m=g.members||[];for(let i=0;i<m.length;i++)for(let j=i+1;j<m.length;j++){const k=[m[i],m[j]].sort((a,b)=>a-b).join('-');map.set(k,(map.get(k)||0)+1)}}}return map;}
+function previousRound(){return state.rounds[state.rounds.length-1]||null}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function weightedPick(items,scoreFn){const vals=items.map(x=>({x,s:scoreFn(x)+Math.random()*0.4})).sort((a,b)=>a.s-b.s);return vals[0].x}
+function generateCandidate(present){
+ const gCount=groupCount(present.length), sizes=groupSizes(present.length,gCount), letters=['A','B','C','D'].slice(0,gCount);
+ const prev=previousRound();const pairMap=pairHistory();const summaries=Object.fromEntries(present.map(s=>[s,roleSummary(s)]));const lastRoles=Object.fromEntries(present.map(s=>[s,lastParticipationRole(s)]));
+ let students=shuffle(present);const groups=letters.map((letter,i)=>({letter,size:sizes[i],members:[]}));
+ // Group assignment: greedily minimize previous pairing and avoid large consecutive overlap.
+ for(const s of students){
+   const choices=groups.filter(g=>g.members.length<g.size);
+   const chosen=weightedPick(choices,g=>{
+     let score=0;for(const m of g.members){score+=(pairMap.get([s,m].sort((a,b)=>a-b).join('-'))||0)*3}
+     if(prev){const pg=prev.groups?.find(x=>x.members?.includes(s));if(pg){const overlap=g.members.filter(m=>pg.members.includes(m)).length;if(overlap>=4)score+=1000;else score+=overlap*4}}
+     score+=g.members.length*.15;return score;
+   });
+   chosen.members.push(s);
+ }
+ const assignments={};
+ for(const g of groups){
+   const rc=roleCountsForSize(g.size);let remaining=shuffle(g.members);
+   const slots=[];for(let i=0;i<rc.A;i++)slots.push('A');for(let i=0;i<rc.B;i++)slots.push('B');for(let i=0;i<rc.MOD;i++)slots.push('MOD');for(let i=0;i<rc.TK;i++)slots.push('TK');
+   // Most constrained students first: those with clear previous roles and uneven summaries.
+   const ordered=[...remaining].sort((x,y)=>{
+     const sx=summaries[x],sy=summaries[y];const rx=Math.max(...ROLE_KEYS.map(k=>sx[k]||0))-Math.min(...ROLE_KEYS.map(k=>sx[k]||0));const ry=Math.max(...ROLE_KEYS.map(k=>sy[k]||0))-Math.min(...ROLE_KEYS.map(k=>sy[k]||0));return ry-rx;
+   });
+   const freeSlots=[...slots];
+   for(const s of ordered){
+     let bestIdx=0,bestScore=Infinity;
+     for(let i=0;i<freeSlots.length;i++){
+       const role=freeSlots[i];let score=0;
+       if(lastRoles[s]===role)score+=100;
+       score+=(summaries[s][role]||0)*8;
+       score+=Math.random()*1.5;
+       if(score<bestScore){bestScore=score;bestIdx=i}
+     }
+     const role=freeSlots.splice(bestIdx,1)[0];assignments[s]={group:g.letter,mainRole:role,dualTK:false};
+   }
+   if(rc.dualTK){
+     const mods=g.members.filter(s=>assignments[s].mainRole==='MOD');
+     const tk=weightedPick(mods,s=>(summaries[s].TK||0)*6 + (lastRoles[s]==='TK'?20:0));
+     if(tk)assignments[tk].dualTK=true;
+   }
+ }
+ return {groups:groups.map(g=>({...g,members:[...g.members]})),assignments};
+}
+function scoreCandidate(c,present){
+ let score=0;const prev=previousRound();const pmap=pairHistory();
+ for(const s of present){const a=c.assignments[s];const last=lastParticipationRole(s);if(last===a.mainRole)score+=200;const sum=roleSummary(s);score+=(sum[a.mainRole]||0)*6;}
+ for(const g of c.groups){
+   for(let i=0;i<g.members.length;i++)for(let j=i+1;j<g.members.length;j++){score+=(pmap.get([g.members[i],g.members[j]].sort((a,b)=>a-b).join('-'))||0)*2}
+   if(prev){for(const pg of prev.groups||[]){const ov=g.members.filter(x=>pg.members.includes(x)).length;if(ov>=5)score+=10000;else if(ov===4)score+=50}}
+ }
+ return score+Math.random()*3;
+}
+function makeAssignment(){
+ const present=presentStudents();if(!groupCount(present.length))return null;
+ const candidates=[];for(let i=0;i<160;i++){const c=generateCandidate(present);c.score=scoreCandidate(c,present);candidates.push(c)}
+ candidates.sort((a,b)=>a.score-b.score);const pool=candidates.slice(0,Math.min(12,candidates.length));const pick=pool[Math.floor(Math.random()*pool.length)];
+ return {...pick,present:[...present],theme:{...state.theme}};
+}
+function render(){const app=document.getElementById('app'); if(view==='prep')app.innerHTML=prepHTML();else if(view==='shuffle')app.innerHTML=shuffleHTML();else if(view==='result')app.innerHTML=resultHTML(false);else if(view==='active')app.innerHTML=resultHTML(true);else if(view==='admin')app.innerHTML=adminHTML();else if(view==='historyRound')app.innerHTML=historyRoundHTML();bind();if(view==='shuffle')requestAnimationFrame(runShuffleAnimation);}
+function themeTop(withBack=false){return `<div class="topbar">${withBack?'<button class="backBtn" data-action="back">戻る</button>':'<div style="width:48px"></div>'}<div class="themeWrap"><div class="themeTitle">${esc(state.theme.title)}</div><div class="themeVs">${esc(state.theme.sideA)} <span style="color:#8b92a0">VS</span> ${esc(state.theme.sideB)}</div></div><button class="gear" data-action="admin">⚙︎</button></div>`}
+function prepHTML(){const p=presentStudents();const gc=groupCount(p.length);return `${themeTop()}<div class="statRow"><span>出席 ${p.length}人</span><span>欠席 ${state.absent.length}人</span><span>${gc?gc+'グループ':'自動編成不可'}</span></div><div class="studentGrid">${STUDENTS.map(n=>`<button class="studentBtn ${state.absent.includes(n)?'absent':''}" data-student="${n}">${n}</button>`).join('')}</div>${gc?'':`<div class="notice">人数が少ないため自動編成できません（15〜28人に対応）</div>`}<div class="bottomArea"><button class="holdBtn" ${gc?'':'disabled'} data-hold="start"><div class="holdFill"></div><span class="holdText">長押しでシャッフル</span></button></div>`}
+function shuffleHTML(){const d=provisional,p=d?.present||presentStudents();if(!d)return '';const gridClass=d.groups.length===4?'four':'three';return `<div class="shuffleStage"><div class="shuffleLabel">チーム分け中…</div><div class="mixCloud" id="mixCloud">${p.map((n,i)=>`<div class="mixCard" style="animation-delay:${(i%7)*.07}s">${n}</div>`).join('')}</div><div class="teamsGrid ${gridClass} shuffleTarget" id="shuffleTarget">${d.groups.map(g=>teamCardHTML(g,d)).join('')}</div></div>`}
+function roleLabel(role,theme){return role==='A'?theme.sideA:role==='B'?theme.sideB:role==='MOD'?'司会':'タイムキーパー'}
+function teamCardHTML(g,data){const as=data.assignments,t=data.theme;const mods=g.members.filter(s=>as[s].mainRole==='MOD'), tks=g.members.filter(s=>as[s].mainRole==='TK'), dual=mods.filter(s=>as[s].dualTK), sideA=g.members.filter(s=>as[s].mainRole==='A'),sideB=g.members.filter(s=>as[s].mainRole==='B');const nums=arr=>`<div class="numberRow">${arr.map(n=>`<div><div class="numChip" data-chip="${n}">${n}</div>${as[n]?.dualTK?'<div class="dual">TK兼任</div>':''}</div>`).join('')}</div>`;return `<section class="teamCard ${g.letter}"><div class="teamHeader">${g.letter}チーム</div><div class="roleOps"><div class="roleBox"><div class="roleName">司会</div>${nums(mods)}</div><div class="roleBox"><div class="roleName">タイムキーパー</div>${nums(tks.length?tks:dual)}</div></div><div class="roleSides"><div class="roleBox"><div class="roleName">${esc(t.sideA)}</div>${nums(sideA)}</div><div class="roleBox"><div class="roleName">${esc(t.sideB)}</div>${nums(sideB)}</div></div></section>`}
+function resultHTML(active){const d=provisional; if(!d)return '<div>編成データがありません。</div>';const gridClass=d.groups.length===4?'four':'three';const roundNo=state.rounds.length+1;return `<div class="resultScreen">${themeTop()}<div class="modeBadge">${active?`第${state.rounds.length}回・実施中`:`第${roundNo}回・編成結果`}</div><div class="teamsGrid ${gridClass}">${d.groups.map(g=>teamCardHTML(g,d)).join('')}</div><div class="actionBar">${active?`<button class="primary" data-action="nextDebate">次のディベートへ</button>`:`<button class="primary" data-action="confirmAssignment">この編成で実施</button><button class="holdBtn" style="min-width:260px;height:54px" data-hold="reshuffle"><div class="holdFill"></div><span class="holdText">もう一度シャッフル</span></button>`}</div></div>`}
+function adminHTML(){return `<div class="adminWrap"><div class="topbar"><button class="backBtn" data-action="backPrep">戻る</button><div style="font-weight:900;font-size:28px">管理</div><div style="width:92px"></div></div><div class="adminTabs">${[['history','履歴'],['summary','児童別集計'],['theme','テーマ設定'],['data','授業・データ管理']].map(([k,l])=>`<button class="tabBtn ${adminTab===k?'active':''}" data-tab="${k}">${l}</button>`).join('')}</div><div class="panel">${adminPanelHTML()}</div></div>`}
+function adminPanelHTML(){if(adminTab==='history')return historyHTML();if(adminTab==='summary')return summaryHTML();if(adminTab==='theme')return themeHTML();return dataHTML()}
+function historyHTML(){if(!state.rounds.length)return '<h2>履歴</h2><p>まだ確定済みの編成はありません。</p>';const sessions=[...state.sessions].sort((a,b)=>b.createdAt-a.createdAt);return `<h2>履歴</h2><div class="scroll">${sessions.map(s=>{const rounds=state.rounds.filter(r=>r.sessionId===s.id);if(!rounds.length)return '';return `<div class="historySession"><div class="historyHead"><strong>${fmtDate(s.date)} の授業</strong><span>${rounds.length}回</span></div><div class="roundList">${rounds.map(r=>`<button class="roundBtn" data-round="${r.id}">第${state.rounds.indexOf(r)+1}回　${fmtTime(r.confirmedAt)}<div class="small">${esc(r.theme.title)}｜${esc(r.theme.sideA)} VS ${esc(r.theme.sideB)}</div></button>`).join('')}</div></div>`}).join('')}</div>`}
+function summaryHTML(){return `<h2>児童別集計</h2><div class="scroll"><table class="summaryTable"><thead><tr><th>番号</th><th>派閥A</th><th>派閥B</th><th>司会</th><th>TK</th><th>欠席</th></tr></thead><tbody>${STUDENTS.map(s=>{const x=roleSummary(s);return `<tr><td><strong>${s}</strong></td><td>${x.A}</td><td>${x.B}</td><td>${x.MOD}</td><td>${x.TK}</td><td>${x.ABS}</td></tr>`}).join('')}</tbody></table></div>`}
+function themeHTML(){return `<h2>テーマ設定</h2><label>テーマ名<input id="themeTitle" class="textInput" value="${esc(state.theme.title)}"></label><label>派閥A<input id="themeA" class="textInput" value="${esc(state.theme.sideA)}"></label><label>派閥B<input id="themeB" class="textInput" value="${esc(state.theme.sideB)}"></label><button class="primary" data-action="saveTheme">保存して準備画面へ</button>`}
+function dataHTML(){return `<h2>授業・データ管理</h2><div class="settingsGrid"><div class="settingsBox"><h3>新しい授業</h3><p>欠席設定を全員出席へ戻します。履歴とローテーション情報は残ります。</p><button class="primary" data-action="newLesson">新しい授業</button></div><div class="settingsBox"><h3>バックアップ</h3><p>履歴・テーマ・設定をJSONファイルとして保存します。</p><button class="secondary" data-action="backup">バックアップを保存</button><div style="height:8px"></div><button class="secondary" data-action="restore">バックアップから復元</button><input id="restoreFile" type="file" accept="application/json,.json" class="hidden"></div><div class="settingsBox"><h3>履歴の管理</h3><p>個別削除は履歴画面で各回を開いて行えます。</p><button class="danger" data-action="resetAll">全履歴をリセット</button></div></div>`}
+function historyRoundHTML(){const r=state.rounds.find(x=>x.id===historyViewRound);if(!r)return '<div>履歴がありません。</div>';const idx=state.rounds.indexOf(r)+1;const d={groups:r.groups,assignments:r.assignments,theme:r.theme};const gridClass=r.groups.length===4?'four':'three';return `<div class="historyScreen"><div class="topbar"><button class="backBtn" data-action="backAdmin">戻る</button><div class="themeWrap"><div class="themeTitle">${esc(r.theme.title)}</div><div class="themeVs">${esc(r.theme.sideA)} <span style="color:#8b92a0">VS</span> ${esc(r.theme.sideB)}</div></div><div style="width:92px"></div></div><div class="modeBadge">過去の履歴・第${idx}回　${fmtDate(r.date)} ${fmtTime(r.confirmedAt)}</div><div class="teamsGrid ${gridClass}">${r.groups.map(g=>teamCardHTML(g,d)).join('')}</div><div class="actionBar"><button class="danger" data-action="deleteRound" data-id="${r.id}">この回を削除</button></div></div>`}
+
+function bind(){
+ document.querySelectorAll('[data-student]').forEach(b=>b.onclick=()=>{const n=+b.dataset.student;if(state.absent.includes(n))state.absent=state.absent.filter(x=>x!==n);else state.absent.push(n);save();render()});
+ document.querySelectorAll('[data-action="admin"]').forEach(b=>b.onclick=()=>openPin());
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{adminTab=b.dataset.tab;render()});
+ document.querySelectorAll('[data-round]').forEach(b=>b.onclick=()=>{historyViewRound=b.dataset.round;view='historyRound';render()});
+ document.querySelectorAll('[data-action]').forEach(b=>{const a=b.dataset.action;if(a==='admin')return;if(a==='backPrep')b.onclick=()=>{view='prep';render()};if(a==='backAdmin')b.onclick=()=>{view='admin';render()};if(a==='saveTheme')b.onclick=saveTheme;if(a==='confirmAssignment')b.onclick=confirmAssignment;if(a==='nextDebate')b.onclick=nextDebate;if(a==='newLesson')b.onclick=newLesson;if(a==='backup')b.onclick=backup;if(a==='restore')b.onclick=()=>document.getElementById('restoreFile').click();if(a==='resetAll')b.onclick=resetAll;if(a==='deleteRound')b.onclick=()=>deleteRound(b.dataset.id)});
+ const rf=document.getElementById('restoreFile');if(rf)rf.onchange=e=>restoreFile(e.target.files?.[0]);
+ document.querySelectorAll('[data-hold]').forEach(setupHold);
+}
+function setupHold(btn){let start=0,localTimer=null,localRAF=null;const fill=btn.querySelector('.holdFill');const reset=()=>{cancelAnimationFrame(localRAF);clearTimeout(localTimer);fill.style.width='0';start=0};const begin=(e)=>{if(btn.disabled||start)return;e.preventDefault();start=performance.now();const tick=()=>{const p=Math.min(1,(performance.now()-start)/1500);fill.style.width=(p*100)+'%';if(p<1)localRAF=requestAnimationFrame(tick)};tick();localTimer=setTimeout(()=>{fill.style.width='100%';start=0;if(btn.dataset.hold==='start')startShuffle();else reshuffle();},1500)};if(window.PointerEvent){btn.addEventListener('pointerdown',begin,{passive:false});['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,reset,{passive:true}));}else{btn.addEventListener('touchstart',begin,{passive:false});['touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,reset,{passive:true}));}}
+function runShuffleAnimation(){
+ const cloud=document.getElementById('mixCloud'),target=document.getElementById('shuffleTarget');if(!cloud||!target)return;
+ const chips=[...target.querySelectorAll('.numChip')];
+ setTimeout(()=>{
+   cloud.classList.add('fade');
+   chips.forEach((chip,i)=>setTimeout(()=>{
+     if(view!=='shuffle')return;
+     const r=chip.getBoundingClientRect();const size=Math.max(46,Math.min(r.width||58,68));
+     const fly=document.createElement('div');fly.className='flyChip';fly.textContent=chip.textContent;fly.style.width=size+'px';fly.style.height=size+'px';fly.style.fontSize=Math.max(22,size*.48)+'px';
+     const sx=innerWidth/2-size/2,sy=innerHeight/2-size/2;fly.style.left=sx+'px';fly.style.top=sy+'px';document.body.appendChild(fly);
+     const dx=r.left-sx+(r.width-size)/2,dy=r.top-sy+(r.height-size)/2;
+     const a=fly.animate([{transform:'translate(0,0) scale(.82)',opacity:.88},{transform:`translate(${dx}px,${dy}px) scale(1)`,opacity:1}],{duration:430,easing:'cubic-bezier(.2,.75,.25,1)',fill:'forwards'});
+     a.onfinish=()=>{chip.style.opacity='1';const dual=chip.parentElement?.querySelector('.dual');if(dual)dual.style.opacity='1';fly.remove();};
+   },i*70));
+ },950);
+}
+function startShuffle(){provisional=makeAssignment();if(!provisional)return;view='shuffle';render();setTimeout(()=>{view='result';render()},4000)}
+function reshuffle(){provisional=makeAssignment();view='shuffle';render();setTimeout(()=>{view='result';render()},4000)}
+function confirmAssignment(){modal('この編成を確定しますか？',`この編成を第${state.rounds.length+1}回の履歴に保存します。`,[{label:'キャンセル'},{label:'確定する',primary:true,cb:()=>{const now=Date.now();state.rounds.push({id:uid(),sessionId:state.currentSessionId,date:currentSession().date,confirmedAt:now,present:[...provisional.present],theme:{...provisional.theme},groups:structuredClone(provisional.groups),assignments:structuredClone(provisional.assignments)});save();view='active';render()}}])}
+function nextDebate(){modal('次のディベートへ進みますか？','現在の編成は履歴に保存されています。',[{label:'キャンセル'},{label:'次へ',primary:true,cb:()=>{provisional=null;view='prep';render()}}])}
+function openPin(){modal('管理PIN','4桁のPINを入力してください。',[{label:'キャンセル'},{label:'開く',primary:true,cb:()=>{const v=document.getElementById('pinField')?.value;if(v===PIN){closeModal();view='admin';render()}else{alert('PINが違います')}}}],`<input id="pinField" class="pinInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off">`,true)}
+function saveTheme(){const title=document.getElementById('themeTitle').value.trim(),a=document.getElementById('themeA').value.trim(),b=document.getElementById('themeB').value.trim();if(!title||!a||!b){alert('3項目すべて入力してください');return}state.theme={title,sideA:a,sideB:b};save();view='prep';render()}
+function newLesson(){modal('新しい授業を開始しますか？','欠席設定は全員出席に戻ります。これまでの編成履歴は残ります。',[{label:'キャンセル'},{label:'開始する',primary:true,cb:()=>{state.absent=[];const s={id:uid(),date:todayISO(),createdAt:Date.now()};state.sessions.push(s);state.currentSessionId=s.id;save();modal('ディベートテーマを変更しますか？','前回のテーマをそのまま使うこともできます。',[{label:'変更しない',cb:()=>{closeModal();view='prep';render()}},{label:'変更する',primary:true,cb:()=>{closeModal();adminTab='theme';view='admin';render()}}])}}])}
+function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`debate-backup-${todayISO()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function restoreFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{let data;try{data=normalizeState(JSON.parse(reader.result))}catch(e){alert('読み込めないファイルです');return}modal('バックアップから復元しますか？','現在のデータはすべて上書きされます。',[{label:'キャンセル'},{label:'復元する',primary:true,cb:()=>{state=data;save();provisional=null;view='prep';render()}}])};reader.readAsText(file)}
+function resetAll(){modal('全履歴をリセットしますか？','確定済みの編成履歴とローテーション履歴をすべて削除します。テーマ設定は残します。',[{label:'キャンセル'},{label:'削除する',danger:true,cb:()=>{state.rounds=[];state.sessions=[{id:uid(),date:todayISO(),createdAt:Date.now()}];state.currentSessionId=state.sessions[0].id;state.absent=[];save();render()}}])}
+function deleteRound(id){modal('この回を削除しますか？','削除すると、この回はローテーション計算からも完全に除外されます。',[{label:'キャンセル'},{label:'削除する',danger:true,cb:()=>{state.rounds=state.rounds.filter(r=>r.id!==id);save();historyViewRound=null;view='admin';adminTab='history';render()}}])}
+function modal(title,text,actions,extra='',keepOpen=false){document.getElementById('modalRoot').innerHTML=`<div class="modal"><div class="modalCard"><div class="modalTitle">${esc(title)}</div><div class="modalText">${esc(text)}</div>${extra}<div class="modalActions">${actions.map((a,i)=>`<button class="${a.primary?'primary':a.danger?'danger':'secondary'}" data-mact="${i}">${esc(a.label)}</button>`).join('')}</div></div></div>`;document.querySelectorAll('[data-mact]').forEach(b=>b.onclick=()=>{const a=actions[+b.dataset.mact];if(!keepOpen)closeModal();if(a.cb)a.cb()})}
+function closeModal(){document.getElementById('modalRoot').innerHTML=''}
+window.addEventListener('orientationchange',()=>setTimeout(render,120));
+render();
+})();
+</script>
+</body>
+</html>
