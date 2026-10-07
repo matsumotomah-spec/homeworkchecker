@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>徒競走 実況れんしゅう</title>
+<style>
+:root{--red:#e64c55;--line:#dce4ed}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;background:#f5f7fa}body{padding:env(safe-area-inset-top) 9px env(safe-area-inset-bottom)}.app{height:100%;width:min(1100px,100%);margin:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0}.track-wrap{flex:1;min-height:170px;padding:8px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.track{height:100%;position:relative;overflow:hidden;border-radius:11px;background:repeating-linear-gradient(0deg,#f9d9d8 0 2px,#fff4f2 2px 100%)}.lane{height:16.6667%;position:relative;border-bottom:1px dashed #e6aba7}.lane:last-child{border:0}.startline,.finish{position:absolute;top:0;bottom:0;z-index:1}.startline{left:8%;border-left:2px solid #8a99aa}.finish{right:7%;width:9px;background:repeating-linear-gradient(0deg,#25364c 0 8px,#fff 8px 16px)}.runner{position:absolute;left:8%;top:50%;width:42px;height:52px;transform:translate(-50%,-50%);z-index:2;filter:drop-shadow(0 2px 1px #24364b22)}.body{position:absolute;left:50%;top:42%;width:22px;height:24px;transform:translate(-50%,-10%);border:2px solid #345a7f;border-radius:12px 12px 8px 8px;background:#5f96d1}.head{position:absolute;left:50%;top:3%;width:24px;height:24px;transform:translateX(-50%);border:1px solid #b87e59;border-radius:50%;background:#ffdbb3}.cap{position:absolute;z-index:2;left:50%;top:0;width:25px;height:9px;transform:translateX(-50%);border:1px solid #8e3540;border-radius:10px 10px 2px 2px}.cap:after{content:"";position:absolute;right:-4px;bottom:-2px;width:10px;height:3px;border-radius:4px;background:inherit}.arm{position:absolute;left:50%;top:49%;width:20px;height:5px;transform:translateX(-50%) rotate(-28deg);border-radius:5px;background:#ffdbb3}.legs{position:absolute;left:50%;top:78%;width:18px;height:11px;transform:translateX(-50%);border-right:4px solid #324b68;border-left:4px solid #324b68}.red .cap{background:var(--red)}.white .cap{background:#fff;border-color:#8290a2}.white .body{background:#f1f3f6}.race-hint{position:absolute;z-index:4;left:50%;top:12px;max-width:78%;transform:translateX(-50%);padding:7px 12px;border-radius:999px;background:#ffffffea;color:#26384e;font-size:clamp(13px,2.2vw,18px);font-weight:750;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}.race-hint.show{opacity:1}.controls{flex:none;display:flex;justify-content:center;gap:10px}.hint-button{min-width:88px;background:#fff;color:#29405c;border:1px solid #b9c6d5;box-shadow:0 3px 0 #a9b7c6}.hint-button:active{box-shadow:0 1px 0 #a9b7c6}.button{min-width:154px;min-height:52px;padding:11px 30px;border:0;border-radius:14px;background:#3476bd;color:white;font-size:20px;font-weight:800;box-shadow:0 4px 0 #24588f;touch-action:manipulation}.button:active{transform:translateY(2px);box-shadow:0 2px 0 #24588f}.button:disabled{opacity:.65}@media(max-height:650px){.app{gap:6px}.track-wrap{padding:6px;border-radius:13px}.button{min-height:44px;padding:7px 27px;font-size:18px}}@media(max-width:600px){.runner{width:36px;height:42px}.finish{right:8%}}
+</style>
+</head>
+<body>
+<main class="app">
+<section class="track-wrap" aria-label="徒競走コース"><div class="track" id="track"><div class="startline"></div><div class="finish"></div><div class="race-hint" id="raceHint" aria-live="polite"></div></div></section>
+<div class="controls"><button class="button hint-button" id="hintBtn" aria-pressed="true">ヒント：ON</button><button class="button" id="startBtn">スタート</button></div>
+</main>
+<script>
+(()=>{
+const track=document.getElementById('track'),hintBox=document.getElementById('raceHint'),btn=document.getElementById('startBtn'),hintBtn=document.getElementById('hintBtn');
+const RACE_MS=13000,HINT_MS=3000;
+let racers=[],running=false,startTime=0,hintsOn=true,firstFinisher=null,announcedStage=-1,lastElapsed=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function groupName(color){return color==='white'?'白組':'赤組'}
+function hideHint(){hintBox.textContent='';hintBox.classList.remove('show')}
+function showHint(text){hintBox.textContent=text;hintBox.classList.add('show')}
+function choose(a){return a[Math.floor(Math.random()*a.length)]}
+function setup(){
+  track.querySelectorAll('.lane').forEach(x=>x.remove());racers=[];firstFinisher=null;announcedStage=-1;lastElapsed=0;
+  const colors=shuffle(['red','red','red','white','white','white']);
+  const finishTimes=shuffle([10800,11200,11600,12000,12400,12800]);
+  for(let i=0;i<6;i++){
+    const lane=document.createElement('div');lane.className='lane';
+    const el=document.createElement('div');el.className='runner '+colors[i];
+    el.innerHTML='<div class="cap"></div><div class="head"></div><div class="body"></div><div class="arm"></div><div class="legs"></div>';
+    lane.appendChild(el);track.appendChild(lane);
+    racers.push({el,color:colors[i],finishAt:finishTimes[i],progress:0,finished:false,
+      changeAt:finishTimes[i]*(.36+Math.random()*.28),
+      changeDuration:850+Math.random()*450,
+      speedRatio:choose([.84,.90,1.10,1.16])});
+  }
+  hideHint();
+}
+function distanceAt(t,r){
+  const transitionStart=r.changeAt,duration=r.changeDuration,ratio=r.speedRatio;
+  const u=(t-transitionStart)/duration;
+  if(u<=0)return t;
+  const rampDistance=duration*(1+(ratio-1)*.5);
+  if(u<1)return transitionStart+duration*(u+(ratio-1)*(u*u*u-.5*u*u*u*u));
+  return transitionStart+rampDistance+ratio*(t-transitionStart-duration);
+}
+function progressAt(elapsed,r){
+  const t=Math.min(elapsed,r.finishAt);
+  const total=distanceAt(r.finishAt,r);
+  return total?Math.min(1,distanceAt(t,r)/total):1;
+}
+function standings(){const sorted=[...racers].sort((a,b)=>b.progress-a.progress);return {sorted,lead:sorted[0],runnerUp:sorted[1],gap:sorted[0]&&sorted[1]?sorted[0].progress-sorted[1].progress:1}}
+function messageForStage(stage){
+  const {lead,runnerUp,gap}=standings();
+  if(stage===0)return choose(['スタートしました！一斉に飛び出しました！','さあ、徒競走がスタートしました！','一斉にスタート！みんな勢いよく走り出しました！']);
+  if(stage>=4)return firstFinisher?`今、${groupName(firstFinisher.color)}が先頭でゴールしました！`:'ゴールまであと少し！最後までがんばってください！';
+  const leader=groupName(lead.color),chaser=groupName(lead.color==='white'?'red':'white');
+  if(stage===1){
+    if(gap<.075)return choose(['赤組、白組、並んで走っています！','両組ともいい走りです！先頭争いは接戦です！','どちらが先頭に出るでしょう。目が離せません！']);
+    return choose([`${leader}が先頭です！`,`ここまで${leader}が先頭を走っています！`,`${leader}がリード！${chaser}も追いかけます！`]);
+  }
+  if(stage===2){
+    if(gap<.09)return choose(['赤、白、どちらも速いです！接戦が続いています！','並んでいます！どちらもがんばれ！',`${chaser}が追い上げています！先頭に届くでしょうか！`]);
+    return choose([`${leader}が先頭です！${chaser}もがんばってください！`,`${leader}がリードを広げています！`,`${chaser}が追い上げています！がんばれ！`]);
+  }
+  return choose(['最後の直線に入りました！','ゴールまであと少し！最後までがんばってください！',`${leader}が先頭で最後の直線！みんながんばれ！`]);
+}
+function updateHint(elapsed){const stage=Math.floor(elapsed/HINT_MS);if(stage===announcedStage)return;announcedStage=stage;if(!hintsOn){hideHint();return}showHint(messageForStage(stage))}
+function tick(now){
+  if(!running)return;
+  const elapsed=now-startTime;lastElapsed=elapsed;const raceElapsed=Math.min(elapsed,RACE_MS);
+  for(const r of racers){r.progress=progressAt(raceElapsed,r);r.el.style.left=(8+r.progress*84)+'%';if(!r.finished&&r.progress>=1){r.finished=true;if(!firstFinisher)firstFinisher=r}}
+  updateHint(raceElapsed);
+  if(elapsed>=RACE_MS){if(hintsOn&&elapsed<RACE_MS+HINT_MS){requestAnimationFrame(tick);return}running=false;btn.disabled=false;btn.textContent='もう一度';return}
+  requestAnimationFrame(tick);
+}
+hintBtn.addEventListener('click',()=>{hintsOn=!hintsOn;hintBtn.textContent=hintsOn?'ヒント：ON':'ヒント：OFF';hintBtn.setAttribute('aria-pressed',String(hintsOn));if(!hintsOn)hideHint();else announcedStage=Math.floor(lastElapsed/HINT_MS)-1});
+btn.addEventListener('click',()=>{if(running)return;setup();running=true;btn.disabled=true;btn.textContent='レース中';startTime=performance.now();requestAnimationFrame(tick)});
+setup();
+})();
+</script>
+</body>
+</html>
